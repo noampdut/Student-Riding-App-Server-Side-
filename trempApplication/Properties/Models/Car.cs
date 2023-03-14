@@ -6,6 +6,7 @@
         public string Type { get; set; }
         public string Color { get; set; }
         public string NickName { get; set; }
+        public string CarNumber { get; set; }
     }
 
 }
