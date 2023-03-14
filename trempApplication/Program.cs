@@ -11,6 +11,7 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
 builder.Services.AddScoped<IPassenger, PassengerService>();
+builder.Services.AddScoped<ICar, CarService>();
 
 var app = builder.Build();
 
