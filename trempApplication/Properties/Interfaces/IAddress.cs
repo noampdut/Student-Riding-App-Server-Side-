@@ -4,7 +4,7 @@ namespace trempApplication.Properties.Interfaces
 {
     public interface IAddress
     {
-        Task<List<Address>> GetAllAddresss();
+        Task<List<Address>> GetAllAddresses();
         Task<Address> GetAddressById(Guid id);
         Task AddAddress(Address address);
         Task UpdateAddress(Address address, Guid id);
