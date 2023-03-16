@@ -1,3 +1,6 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using trempApplication.Properties.Interfaces;
 using trempApplication.Properties.Services;
 
@@ -9,6 +12,8 @@ builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+//new
+
 
 builder.Services.AddScoped<IPassenger, PassengerService>();
 builder.Services.AddScoped<ICar, CarService>();
