@@ -14,16 +14,17 @@ namespace trempApplication.Properties.Services
             ridesCollection = mongoDB.GetCollection<Ride>("Rides");
         }
 
-        public async Task AddRide(Ride ride)
+        public async Task<(bool IsSuccess, string ErrorMessage)> AddRide(Ride ride)
         {
             try
             {
                 if (ride == null)
                 {
-                    throw new ArgumentNullException(nameof(ride), "The ride object is null.");
+                    return (false, "ride is null object");
                 }
 
                 await ridesCollection.InsertOneAsync(ride);
+                return (true, null);
             }
             catch (Exception ex)
             {
@@ -32,12 +33,17 @@ namespace trempApplication.Properties.Services
         }
 
 
-        public async Task DeleteRide(Guid id)
+        public async Task<(bool IsSuccess, string ErrorMessage)> DeleteRide(Guid id)
         {
             try
             {
                 var filter = Builders<Ride>.Filter.Eq(u => u.Id, id);
-                await ridesCollection.DeleteOneAsync(filter);
+                var ride = await ridesCollection.DeleteOneAsync(filter);
+                if (ride == null)
+                {
+                    return (false, "No ride was found to be deleted");
+                }
+                return (true, null);
             }
             catch (Exception ex)
             {
@@ -45,12 +51,16 @@ namespace trempApplication.Properties.Services
             }
         }
 
-        public async Task<List<Ride>> GetAllRides()
+        public async Task<(bool IsSuccess, List<Ride> Ride, string ErrorMessage)> GetAllRides()
         {
             try
             {
                 var rides = await ridesCollection.Find(u => true).ToListAsync();
-                return rides;
+                if (rides != null)
+                {
+                    return (true, rides, null);
+                }
+                return (false, null, "No rides found");
             }
             catch (Exception ex)
             {
@@ -58,13 +68,17 @@ namespace trempApplication.Properties.Services
             }
         }
 
-        public async Task<Ride> GetRideById(Guid id)
+        public async Task<(bool IsSuccess, Ride Ride, string ErrorMessage)> GetRideById(Guid id)
         {
             try
             {
                 var filter = Builders<Ride>.Filter.Eq(u => u.Id, id);
                 var ride = await ridesCollection.Find(filter).FirstOrDefaultAsync();
-                return ride;
+                if (ride != null)
+                {
+                    return (true, ride, null);
+                }
+                return (false, null, "No ride found");
             }
             catch (Exception ex)
             {
@@ -73,17 +87,18 @@ namespace trempApplication.Properties.Services
         }
 
 
-        public async Task UpdateRide(Ride ride, Guid id)
+        public async Task<(bool IsSuccess, string ErrorMessage)> UpdateRide(Ride ride, Guid id)
         {
             try
             {
                 if (ride == null)
                 {
-                    throw new ArgumentNullException(nameof(ride), "The ride object is null.");
+                    return (false, "The ride object is null.");
                 }
 
                 var filter = Builders<Ride>.Filter.Eq(u => u.Id, id);
                 await ridesCollection.ReplaceOneAsync(filter, ride);
+                return (true, null);
             }
             catch (Exception ex)
             {

@@ -13,16 +13,17 @@ namespace trempApplication.Properties.Services
             var mongoDB = mongoClient.GetDatabase("DB");
             addressesCollection = mongoDB.GetCollection<Address>("Addresses");
         }
-        public async Task AddAddress(Address address)
+        public async Task<(bool IsSuccess, string ErrorMessage)> AddAddress(Address address)
         {
             try
             {
                 if (address == null)
                 {
-                    throw new ArgumentNullException(nameof(address), "The address object is null.");
+                    return (false, "address is null object");
                 }
 
                 await addressesCollection.InsertOneAsync(address);
+                return (true, null);
             }
             catch (Exception ex)
             {
@@ -31,12 +32,17 @@ namespace trempApplication.Properties.Services
             }
         }
 
-        public async Task DeleteAddress(Guid id)
+        public async Task<(bool IsSuccess, string ErrorMessage)> DeleteAddress(Guid id)
         {
             try
             {
                 var filter = Builders<Address>.Filter.Eq(u => u.Id, id);
-                await addressesCollection.DeleteOneAsync(filter);
+                var address =  await addressesCollection.DeleteOneAsync(filter);
+                if (address == null)
+                {
+                    return (false, "No address was found to be deleted");
+                }
+                return (true, null);
             }
             catch (Exception ex)
             {
@@ -45,12 +51,16 @@ namespace trempApplication.Properties.Services
             }
         }
 
-        public async Task<List<Address>> GetAllAddresses()
+        public async Task<(bool IsSuccess, List<Address> Address, string ErrorMessage)> GetAllAddresses()
         {
             try
             {
                 var addresses = await addressesCollection.Find(u => true).ToListAsync();
-                return addresses;
+                if (addresses != null)
+                {
+                    return (true, addresses, null);
+                }
+                return (false, null, "No addresses found");
             }
             catch (Exception ex)
             {
@@ -59,13 +69,17 @@ namespace trempApplication.Properties.Services
             }
         }
 
-        public async Task<Address> GetAddressById(Guid id)
+        public async Task<(bool IsSuccess, Address Address, string ErrorMessage)> GetAddressById(Guid id)
         {
             try
             {
                 var filter = Builders<Address>.Filter.Eq(u => u.Id, id);
                 var address = await addressesCollection.Find(filter).FirstOrDefaultAsync();
-                return address;
+                if (address != null)
+                {
+                    return (true, address, null);
+                }
+                return (false, null, "No address found");
             }
             catch (Exception ex)
             {
@@ -74,17 +88,18 @@ namespace trempApplication.Properties.Services
             }
         }
 
-        public async Task UpdateAddress(Address address, Guid id)
+        public async Task<(bool IsSuccess, string ErrorMessage)> UpdateAddress(Address address, Guid id)
         {
             try
             {
                 if (address == null)
                 {
-                    throw new ArgumentNullException(nameof(address), "The address object is null.");
+                    return (false, "The address object is null.");
                 }
 
                 var filter = Builders<Address>.Filter.Eq(u => u.Id, id);
                 await addressesCollection.ReplaceOneAsync(filter, address);
+                return (true, null);
             }
             catch (Exception ex)
             {

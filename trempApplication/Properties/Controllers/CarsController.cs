@@ -20,38 +20,63 @@ namespace trempApplication.Properties.Controllers
 
         // GET: api/<CarsController>
         [HttpGet]
-        public async Task<IEnumerable<Car>> Get()
+        public async Task<IActionResult> Get()
         {
-            return await _carService.GetAllCars();
-        }
+            var result = await _carService.GetAllCars();
+            if(result.IsSuccess)
+            {
+                return Ok(result.Car);
+            }
+            return NotFound(result.ErrorMessage);
+        }   
 
         // GET api/<CarsController>/5
         [HttpGet("{id}")]
-        public async Task<Car> Get(Guid id)
+        public async Task<IActionResult> Get(Guid id)
         {
-            return await _carService.GetCarById(id);
+            var result = await _carService.GetCarById(id);
+            if (result.IsSuccess)
+            {
+                return Ok(result.Car);
+            }
+            return NotFound(result.ErrorMessage);
         }
 
         // POST api/<CarsController>
         [HttpPost]
-        public async Task Post([FromBody] Car car)
+        public async Task<IActionResult> Post([FromBody] Car car)
         {
-            await _carService.AddCar(car);
+            var result = await _carService.AddCar(car);
+            if(result.IsSuccess)
+            {
+                return StatusCode(StatusCodes.Status201Created);
+            }
+            return BadRequest(result.ErrorMessage);
         }
 
         // PUT api/<CarsController>/5
         [HttpPut("{id}")]
-        public async Task Put(Guid id, [FromBody] Car car)
+        public async Task<IActionResult> Put(Guid id, [FromBody] Car car)
         { 
-            await _carService.UpdateCar(car, id);
+            var result = await _carService.UpdateCar(car, id);
+            if (result.IsSuccess)
+            {
+                return NoContent();
+            }
+            return BadRequest(result.ErrorMessage);
         }
 
 
             // DELETE api/<CarsController>/5
         [HttpDelete("{id}")]
-        public async Task Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            await _carService.DeleteCar(id);
+            var result = await _carService.DeleteCar(id);
+            if (result.IsSuccess)
+            {
+                return NoContent();
+            }
+            return BadRequest(result.ErrorMessage);
         }
     }
 }

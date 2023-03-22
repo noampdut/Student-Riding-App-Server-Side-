@@ -4,10 +4,10 @@ namespace trempApplication.Properties.Interfaces
 {
     public interface ICar
     {
-        Task<List<Car>> GetAllCars();
-        Task<Car> GetCarById(Guid id);
-        Task AddCar(Car car);
-        Task UpdateCar(Car car, Guid id);
-        Task DeleteCar(Guid id);
+        Task<(bool IsSuccess, List<Car> Car, string ErrorMessage)> GetAllCars();
+        Task<(bool IsSuccess,Car Car, string ErrorMessage)> GetCarById(Guid id);
+        Task<(bool IsSuccess, string ErrorMessage)> AddCar(Car car);
+        Task<(bool IsSuccess, string ErrorMessage)> UpdateCar(Car car, Guid id);
+        Task<(bool IsSuccess, string ErrorMessage)> DeleteCar(Guid id);
     }
 }

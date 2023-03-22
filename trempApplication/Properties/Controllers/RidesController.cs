@@ -19,37 +19,63 @@ namespace trempApplication.Properties.Controllers
 
         // GET: api/<RidesController>
         [HttpGet]
-        public async Task<IEnumerable<Ride>> Get()
+        public async Task<IActionResult> Get()
         {
-            return await _rideService.GetAllRides();
+            var result = await _rideService.GetAllRides();
+            if (result.IsSuccess)
+            {
+                return Ok(result.Ride);
+            }
+            return NotFound(result.ErrorMessage);
         }
 
         // GET api/<RidesController>/5
         [HttpGet("{id}")]
-        public async Task<Ride> Get(Guid id)
+        public async Task<IActionResult> Get(Guid id)
         {
-            return await _rideService.GetRideById(id);
+            var result = await _rideService.GetRideById(id);
+            if (result.IsSuccess)
+            {
+                return Ok(result.Ride);
+            }
+            return NotFound(result.ErrorMessage);
         }
 
         // POST api/<RidesController>
         [HttpPost]
-        public async Task Post([FromBody] Ride ride)
+        public async Task<IActionResult> Post([FromBody] Ride ride)
         {
-            await _rideService.AddRide(ride);
+            var result = await _rideService.AddRide(ride);
+            if (result.IsSuccess)
+            {
+                return StatusCode(StatusCodes.Status201Created);
+            }
+            return BadRequest(result.ErrorMessage);
+
         }
 
         // PUT api/<RidesController>/5
         [HttpPut("{id}")]
-        public async Task Put(Guid id, [FromBody] Ride ride)
+        public async Task<IActionResult> Put(Guid id, [FromBody] Ride ride)
         {
-            await _rideService.UpdateRide(ride, id);
+            var result = await _rideService.UpdateRide(ride, id);
+            if (result.IsSuccess)
+            {
+                return NoContent();
+            }
+            return BadRequest(result.ErrorMessage);
         }
 
         // DELETE api/<RidesController>/5
         [HttpDelete("{id}")]
-        public async Task Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            await _rideService.DeleteRide(id);
+            var result = await _rideService.DeleteRide(id);
+            if (result.IsSuccess)
+            {
+                return NoContent();
+            }
+            return BadRequest(result.ErrorMessage);
         }
     }
 }

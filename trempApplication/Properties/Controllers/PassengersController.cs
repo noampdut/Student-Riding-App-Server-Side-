@@ -20,37 +20,62 @@ namespace trempApplication.Properties.Controllers
 
         // GET: api/<PassengersController>
         [HttpGet]
-        public async Task<IEnumerable<Passenger>> Get()
+        public async Task<IActionResult> Get()
         {
-            return await _passengerService.GetAllPassengers();
+            var result = await _passengerService.GetAllPassengers();
+            if (result.IsSuccess)
+            {
+                return Ok(result.Passenger);
+            }
+            return NotFound(result.ErrorMessage);
         }
 
         // GET api/<PassengersController>/5
         [HttpGet("{id}")]
-        public async Task<Passenger> Get(Guid id)
+        public async Task<IActionResult> Get(Guid id)
         {
-            return await _passengerService.GetPassengerById(id);
+            var result = await _passengerService.GetPassengerById(id);
+            if (result.IsSuccess)
+            {
+                return Ok(result.Passenger);
+            }
+            return NotFound(result.ErrorMessage);
         }
 
         // POST api/<PassengersController>
         [HttpPost]
-        public async Task Post([FromBody] Passenger passenger)
+        public async Task<IActionResult> Post([FromBody] Passenger passenger)
         {
-            await _passengerService.AddPassenger(passenger);
+            var result = await _passengerService.AddPassenger(passenger);
+            if (result.IsSuccess)
+            {
+                return StatusCode(StatusCodes.Status201Created);
+            }
+            return BadRequest(result.ErrorMessage);
         }
 
         // PUT api/<PassengersController>/5
         [HttpPut("{id}")]
-        public async Task Put(Guid id, [FromBody] Passenger passenger)
+        public async Task<IActionResult> Put(Guid id, [FromBody] Passenger passenger)
         {
-            await _passengerService.UpdatePassenger(passenger, id);
+            var result = await _passengerService.UpdatePassenger(passenger, id);
+            if (result.IsSuccess)
+            {
+                return NoContent();
+            }
+            return BadRequest(result.ErrorMessage);
         }
 
         // DELETE api/<PassengersController>/5
         [HttpDelete("{id}")]
-        public async Task Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            await _passengerService.DeletePassenger(id);
+            var result = await _passengerService.DeletePassenger(id);
+            if (result.IsSuccess)
+            {
+                return NoContent();
+            }
+            return BadRequest(result.ErrorMessage);
         }
     }
 }

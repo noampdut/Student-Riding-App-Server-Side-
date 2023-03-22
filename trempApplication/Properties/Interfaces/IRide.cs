@@ -4,10 +4,10 @@ namespace trempApplication.Properties.Interfaces
 {
     public interface IRide
     {
-        Task<List<Ride>> GetAllRides();
-        Task<Ride> GetRideById(Guid id);
-        Task AddRide(Ride ride);
-        Task UpdateRide(Ride ride, Guid id);
-        Task DeleteRide(Guid id);
+        Task<(bool IsSuccess, List<Ride> Ride, string ErrorMessage)> GetAllRides();
+        Task<(bool IsSuccess, Ride Ride, string ErrorMessage)> GetRideById(Guid id);
+        Task<(bool IsSuccess, string ErrorMessage)> AddRide(Ride ride);
+        Task<(bool IsSuccess, string ErrorMessage)> UpdateRide(Ride ride, Guid id);
+        Task<(bool IsSuccess, string ErrorMessage)> DeleteRide(Guid id);
     }
 }

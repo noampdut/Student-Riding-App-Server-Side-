@@ -20,37 +20,62 @@ namespace trempApplication.Properties.Controllers
 
         // GET: api/<AddressesController>
         [HttpGet]
-        public async Task<IEnumerable<Address>> Get()
+        public async Task<IActionResult> Get()
         {
-            return await _addressService.GetAllAddresses();
+            var result = await _addressService.GetAllAddresses();
+            if (result.IsSuccess)
+            {
+                return Ok(result.Address);
+            }
+            return NotFound(result.ErrorMessage);
         }
 
         // GET api/<AddressesController>/5
         [HttpGet("{id}")]
-        public async Task<Address> Get(Guid id)
+        public async Task<IActionResult> Get(Guid id)
         {
-            return await _addressService.GetAddressById(id);
+            var result = await _addressService.GetAddressById(id);
+            if (result.IsSuccess)
+            {
+                return Ok(result.Address);
+            }
+            return NotFound(result.ErrorMessage);
         }
 
         // POST api/<AddressesController>
         [HttpPost]
-        public async Task Post([FromBody] Address address)
+        public async Task<IActionResult> Post([FromBody] Address address)
         {
-            await _addressService.AddAddress(address);
+            var result = await _addressService.AddAddress(address);
+            if (result.IsSuccess)
+            {
+                return StatusCode(StatusCodes.Status201Created);
+            }
+            return BadRequest(result.ErrorMessage);
         }
 
         // PUT api/<AddressesController>/5
         [HttpPut("{id}")]
-        public async Task Put(Guid id, [FromBody] Address address)
+        public async Task<IActionResult> Put(Guid id, [FromBody] Address address)
         {
-            await _addressService.UpdateAddress(address, id);
+            var result = await _addressService.UpdateAddress(address, id);
+            if (result.IsSuccess)
+            {
+                return NoContent();
+            }
+            return BadRequest(result.ErrorMessage);
         }
 
         // DELETE api/<AddressesController>/5
         [HttpDelete("{id}")]
-        public async Task Delete(Guid id)
+        public async Task<IActionResult> Delete(Guid id)
         {
-            await _addressService.DeleteAddress(id);
+            var result = await _addressService.DeleteAddress(id);
+            if (result.IsSuccess)
+            {
+                return NoContent();
+            }
+            return BadRequest(result.ErrorMessage);
         }
     }
 }
