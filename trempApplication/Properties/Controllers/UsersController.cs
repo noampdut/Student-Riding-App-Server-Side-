@@ -52,7 +52,7 @@ namespace trempApplication.Properties.Controllers
             };
             var result_user = await _userService.AddUser(user);
             var result_passenger = await _passengerService.AddPassenger(passenger);
-
+            // changed
             if (result_user.IsSuccess && result_passenger.IsSuccess)
             {
                 var new_passenger = await _passengerService.GetPassengerByIdNumber(user.IdNumber);
