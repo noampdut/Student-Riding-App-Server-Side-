@@ -19,6 +19,8 @@ builder.Services.AddScoped<IPassenger, PassengerService>();
 builder.Services.AddScoped<ICar, CarService>();
 builder.Services.AddScoped<IAddress, AddressService>();
 builder.Services.AddScoped<IRide, RideService>();
+builder.Services.AddScoped<IUser, UserService>();
+
 
 
 var app = builder.Build();

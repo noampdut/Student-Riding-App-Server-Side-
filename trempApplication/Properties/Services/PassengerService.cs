@@ -88,6 +88,25 @@ namespace trempApplication.Properties.Services
             }
         }
 
+        public async Task<(bool IsSuccess, Passenger Passenger, string ErrorMessage)> GetPassengerByIdNumber(string IdNumber)
+        {
+            try
+            {
+                var filter = Builders<Passenger>.Filter.Eq(u => u.IdNumber, IdNumber);
+                var passenger = await passengersCollection.Find(filter).FirstOrDefaultAsync();
+                if (passenger != null)
+                {
+                    return (true, passenger, null);
+                }
+                return (false, null, "No passenger found");
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception here
+                throw new Exception("Error getting passenger by id from database", ex);
+            }
+        }
+
         public async Task<(bool IsSuccess, string ErrorMessage)> UpdatePassenger(Passenger passenger, Guid id)
         {
             try
