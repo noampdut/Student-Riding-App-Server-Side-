@@ -30,14 +30,14 @@ namespace trempApplication.Properties.Controllers
             return NotFound(result.ErrorMessage);
         }   
 
-        // GET api/<CarsController>/5
-        [HttpGet("{id}")]
-        public async Task<IActionResult> Get(Guid id)
+       
+        [HttpGet("{owner}")]
+        public async Task<IActionResult> GetByOwner(Guid owner)
         {
-            var result = await _carService.GetCarById(id);
+            var result = await _carService.GetCarsByOwner(owner);
             if (result.IsSuccess)
             {
-                return Ok(result.Car);
+                return Ok(result.cars);
             }
             return NotFound(result.ErrorMessage);
         }

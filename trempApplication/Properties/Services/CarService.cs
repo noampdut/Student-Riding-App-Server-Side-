@@ -19,7 +19,7 @@ namespace trempApplication.Properties.Services
             carsCollection = mongoDB.GetCollection<Car>("Cars");
             passengersCollection = mongoDB.GetCollection<Passenger>("Passengers");
 
-           
+
 
         }
         public async Task<(bool IsSuccess, string ErrorMessage)> AddCar(Car car)
@@ -32,7 +32,7 @@ namespace trempApplication.Properties.Services
                 }
 
                 await carsCollection.InsertOneAsync(car);
-                return(true,null);
+                return (true, null);
             }
             catch (Exception ex)
             {
@@ -47,7 +47,7 @@ namespace trempApplication.Properties.Services
             {
                 var filter = Builders<Car>.Filter.Eq(u => u.Id, carId);
                 var car = await carsCollection.Find(filter).FirstOrDefaultAsync();
-                if(car == null)
+                if (car == null)
                 {
                     return (false, "No car was found to be deleted");
                 }
@@ -73,9 +73,9 @@ namespace trempApplication.Properties.Services
             try
             {
                 var cars = await carsCollection.Find(u => true).ToListAsync();
-                if(cars != null)
+                if (cars != null)
                 {
-                    return (true, cars, null); 
+                    return (true, cars, null);
                 }
                 return (false, null, "No cars found");
             }
@@ -92,9 +92,9 @@ namespace trempApplication.Properties.Services
             {
                 var filter = Builders<Car>.Filter.Eq(u => u.Id, id);
                 var car = await carsCollection.Find(filter).FirstOrDefaultAsync();
-                if(car != null)
+                if (car != null)
                 {
-                    return(true, car, null);
+                    return (true, car, null);
                 }
                 return (false, null, "No car found");
             }
@@ -111,7 +111,7 @@ namespace trempApplication.Properties.Services
             {
                 if (car == null)
                 {
-                    return(false, "The car object is null.");
+                    return (false, "The car object is null.");
                 }
 
                 var filter = Builders<Car>.Filter.Eq(u => u.Id, id);
@@ -122,6 +122,25 @@ namespace trempApplication.Properties.Services
             {
                 // Handle the exception here
                 throw new Exception("Error updating car in database", ex);
+            }
+        }
+
+        public async Task<(bool IsSuccess, List<Car> cars, string ErrorMessage)> GetCarsByOwner(Guid owner)
+        {
+            try
+            {
+                var filter = Builders<Car>.Filter.Eq(u => u.Owner, owner);
+                var cars = await carsCollection.Find(filter).ToListAsync();
+                if (cars != null && cars.Count > 0)
+                {
+                    return (true, cars, null);
+                }
+                return (false, null, "No cars found");
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception here
+                throw new Exception("Error getting cars by owner from database", ex);
             }
         }
 

@@ -48,7 +48,9 @@ namespace trempApplication.Properties.Controllers
             var result = await _rideService.AddRide(ride);
             if (result.IsSuccess)
             {
-                return StatusCode(StatusCodes.Status201Created);
+                Guid Id = Guid.Parse(result.ErrorMessage);
+                var new_ride = await _rideService.GetRideById(Id);
+                return Ok(new_ride.Ride);
             }
             return BadRequest(result.ErrorMessage);
 

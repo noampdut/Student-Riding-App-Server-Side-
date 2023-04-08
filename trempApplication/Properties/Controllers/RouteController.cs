@@ -32,14 +32,11 @@ namespace trempApplication.Properties.Controllers
             var response = await GoogleApi.GoogleMaps.Directions.QueryAsync(request);
             var route = new RouteResponse
             {
-                Distance = response.Routes.First().Legs.Sum(leg => leg.Distance.Value / 1000.0),
-                Duration = response.Routes.First().Legs.Sum(leg => leg.DurationInTraffic?.Value ?? leg.Duration.Value / 3600.0),
+                Distance = Math.Round(response.Routes.First().Legs.Sum(leg => leg.Distance.Value / 1000.0),1),
+                Duration = Math.Ceiling(response.Routes.First().Legs.Sum(leg => leg.DurationInTraffic?.Value ?? leg.Duration.Value / 60.0)),
                 Instructions = response.Routes.First().Legs.SelectMany(leg => leg.Steps.Select(step => step.HtmlInstructions)).ToList()
             };
 
-            Console.WriteLine(response.Routes.First().Legs.First().DurationInTraffic);
-            Console.WriteLine(response.Routes.First().Legs.First().Distance);
-            Console.WriteLine(response.Routes.First().Legs.First().Steps);
             return Ok(route);
         }
 

@@ -24,7 +24,7 @@ namespace trempApplication.Properties.Services
                 }
 
                 await ridesCollection.InsertOneAsync(ride);
-                return (true, null);
+                return (true,ride.Id.ToString());
             }
             catch (Exception ex)
             {
