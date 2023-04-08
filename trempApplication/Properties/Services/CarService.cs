@@ -131,11 +131,11 @@ namespace trempApplication.Properties.Services
             {
                 var filter = Builders<Car>.Filter.Eq(u => u.Owner, owner);
                 var cars = await carsCollection.Find(filter).ToListAsync();
-                if (cars != null && cars.Count > 0)
+                if (cars != null)
                 {
                     return (true, cars, null);
                 }
-                return (false, null, "No cars found");
+                return (false, null, "Error getting cars by owner from database");
             }
             catch (Exception ex)
             {
