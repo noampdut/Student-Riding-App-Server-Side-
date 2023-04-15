@@ -10,5 +10,6 @@ namespace trempApplication.Properties.Interfaces
         Task<(bool IsSuccess, string ErrorMessage)> UpdateCar(Car car, Guid id);
         Task<(bool IsSuccess, string ErrorMessage)> DeleteCar(Guid id);
         Task<(bool IsSuccess, List<Car> cars, string ErrorMessage)> GetCarsByOwner(Guid owner);
+        Task<(bool IsSuccess, string ErrorMessage)> DeleteCarsByOwner(Guid ownerId);
     }
 }

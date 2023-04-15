@@ -32,7 +32,7 @@ namespace trempApplication.Properties.Services
                 }
 
                 await carsCollection.InsertOneAsync(car);
-                return (true, null);
+                return (true, car.Id.ToString());
             }
             catch (Exception ex)
             {
@@ -63,6 +63,36 @@ namespace trempApplication.Properties.Services
             {
                 // Handle the exception here
                 throw new Exception("Error deleting car from database", ex);
+            }
+        }
+
+        public async Task<(bool IsSuccess, string ErrorMessage)> DeleteCarsByOwner(Guid ownerId)
+        {
+            try
+            {
+                var filter = Builders<Car>.Filter.Eq(u => u.Owner, ownerId); // Assuming there's an OwnerId property in the Car model that represents the owner of the car
+                var cars = await carsCollection.Find(filter).ToListAsync(); // Find all cars owned by the given ownerId
+                if (cars == null || cars.Count == 0)
+                {
+                    return (false, "No cars were found to be deleted for the given owner");
+                }
+
+                // Delete all the cars
+                foreach (var car in cars)
+                {
+                    await carsCollection.DeleteOneAsync(c => c.Id == car.Id);
+                }
+
+                // Update the carIds property of all passengers that own the cars
+                var update = Builders<Passenger>.Update.PullAll(x => x.CarIds, cars.Select(c => c.Id)); // Remove all carIds that match the cars' Ids
+                await passengersCollection.UpdateManyAsync(p => p.CarIds.Any(c => cars.Select(car => car.Id).Contains(c)), update); // Update all passengers that have carIds that match the deleted cars' Ids
+
+                return (true, null);
+            }
+            catch (Exception ex)
+            {
+                // Handle the exception here
+                throw new Exception("Error deleting cars from database", ex);
             }
         }
 
@@ -116,7 +146,7 @@ namespace trempApplication.Properties.Services
 
                 var filter = Builders<Car>.Filter.Eq(u => u.Id, id);
                 await carsCollection.ReplaceOneAsync(filter, car);
-                return (true, null);
+                return (true, car.Id.ToString());
             }
             catch (Exception ex)
             {

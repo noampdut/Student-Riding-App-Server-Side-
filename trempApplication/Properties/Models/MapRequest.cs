@@ -4,6 +4,6 @@
     {
         public string Origin { get; set; }
         public string Destination { get; set; }
-        public string[] Waypoints { get; set; }
+        public List<string> Waypoints { get; set; }
     }
 }

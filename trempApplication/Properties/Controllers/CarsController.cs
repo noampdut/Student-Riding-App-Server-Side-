@@ -47,9 +47,11 @@ namespace trempApplication.Properties.Controllers
         public async Task<IActionResult> Post([FromBody] Car car)
         {
             var result = await _carService.AddCar(car);
-            if(result.IsSuccess)
+            if (result.IsSuccess)
             {
-                return StatusCode(StatusCodes.Status201Created);
+                Guid Id = Guid.Parse(result.ErrorMessage);
+                var new_car = await _carService.GetCarById(Id);
+                return Ok(new_car.Car);
             }
             return BadRequest(result.ErrorMessage);
         }
@@ -61,13 +63,15 @@ namespace trempApplication.Properties.Controllers
             var result = await _carService.UpdateCar(car, id);
             if (result.IsSuccess)
             {
-                return NoContent();
+                Guid Id = Guid.Parse(result.ErrorMessage);
+                var new_car = await _carService.GetCarById(Id);
+                return Ok(new_car.Car);
             }
             return BadRequest(result.ErrorMessage);
         }
 
-
-            // DELETE api/<CarsController>/5
+        
+        // DELETE api/<CarsController>/5
         [HttpDelete("{id}")]
         public async Task<IActionResult> Delete(Guid id)
         {
@@ -78,5 +82,19 @@ namespace trempApplication.Properties.Controllers
             }
             return BadRequest(result.ErrorMessage);
         }
+        
+        /*
+        // DELETE api/<CarsController>/5
+        [HttpDelete("{owner}")]
+        public async Task<IActionResult> Delete(Guid owner)
+        {
+            var result = await _carService.DeleteCarsByOwner(owner);
+            if (result.IsSuccess)
+            {
+                return NoContent();
+            }
+            return BadRequest(result.ErrorMessage);
+        }
+        */
     }
 }
