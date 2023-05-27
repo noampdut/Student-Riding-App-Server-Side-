@@ -19,7 +19,7 @@
 
         public List<string> PickUpTimes { get; set; }
        
-        public Passenger Passenger { get; set; }
+        public Passenger DriverName { get; set; }
         /// <summary>
         /// in order to show detaild to the new friend 
         /// </summary>

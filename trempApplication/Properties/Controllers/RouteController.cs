@@ -128,31 +128,33 @@ namespace trempApplication.Properties.Controllers
         [ApiExplorerSettings(IgnoreApi = true)]
         private Tuple<OptionalRoute, double> CalculateRelevance(Ride drive, string origin, string destination)
         {
-            double originWeight =  0.1;
-            double waypointCountWeight = 0.1;
-            double driveDurationWeightFactor =0.1;
-            double waypointCountWeightFactor = 0.1;
-            double relevance = 0;
+            double originWeight =  1;
+            double driveDurationWeightFactor =0.5;
+            double waypointCountWeightFactor = 1;
+            double relevance = 50;
 
             List<string> waypoints = new List<string>();
 
+            var distance = CalculateOptionalRoute(drive.Source, origin, waypoints, drive.Date).Distance;
             // calculate distance between the origin and dest of both driver and passenger
-            if (CalculateOptionalRoute(drive.Source, origin, waypoints, drive.Date).Distance <= 3)
+            if (distance <= 3)
             {
-                relevance += originWeight;
+                relevance += distance * originWeight;
             }
             else
             {
-                relevance -= originWeight;
+                relevance -= distance * originWeight;
             }
 
-            if (CalculateOptionalRoute(drive.Dest, destination, waypoints, drive.Date).Distance <= 3)
+            distance = CalculateOptionalRoute(drive.Dest, destination, waypoints, drive.Date).Distance;
+
+            if (distance <= 3)
             {
-                relevance += originWeight;
+                relevance += distance * originWeight;
             }
             else
             {
-                relevance -= originWeight;
+                relevance -= distance * originWeight;
             }
 
             // checking the direction and than add the client as a new wayPoint
@@ -200,7 +202,7 @@ namespace trempApplication.Properties.Controllers
             else
             {
                 // Reduce the relevance by a factor based on the number of waypoints
-                relevance -= totalWaypoints / (waypointCountWeight * waypointCountWeightFactor);
+                relevance -= totalWaypoints * (waypointCountWeightFactor);
             }
 
             return new Tuple<OptionalRoute, double>(newRoute, relevance);
@@ -231,7 +233,7 @@ namespace trempApplication.Properties.Controllers
                         PickUpTimes = newRoute.PickUpTimes, 
 
                         RideId = route.Id, // old ride- if we get an approval, we will update this  
-                        Passenger = _passengerService.GetPassengerById(route.DriverId).Result.Passenger,
+                        DriverName = _passengerService.GetPassengerById(route.DriverId).Result.Passenger,
                         PickUpPoint = userOrigin,
                         PickUpTime = GetPickUpTimeByWayPoint(newRoute.Legs, userOrigin),
                         Relevance = result.Item2,
