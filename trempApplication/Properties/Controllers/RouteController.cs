@@ -19,10 +19,12 @@ namespace trempApplication.Properties.Controllers
 
 
         private IRide _rideService;
+        private IPassenger _passengerService;
 
-        public RouteController(IRide rideService)
+        public RouteController(IRide rideService, IPassenger passengerService)
         {
             _rideService = rideService;
+            _passengerService = passengerService;
         }
 
         /*
@@ -95,10 +97,31 @@ namespace trempApplication.Properties.Controllers
                 Distance = Math.Round(response.Routes.First().Legs.Sum(leg => leg.Distance.Value / 1000.0), 1),
                 Duration = Math.Ceiling(response.Routes.First().Legs.Sum(leg => leg.DurationInTraffic?.Value ?? leg.Duration.Value / 60.0)),
                 Instructions = response.Routes.First().Legs.SelectMany(leg => leg.Steps.Select(step => step.HtmlInstructions)).ToList(),
-                Waypoints = waypoints
+                Waypoints = waypoints,
+                Legs = response.Routes.First().Legs.ToList()
             };
+            // Retrieve the pick-up times for each leg
+            route.PickUpTimes = GetPickUpTimes(response.Routes.First().Legs.ToList());
+
             return route;
 
+        }
+
+        // Get pick-up times for each leg of the route
+        [Route("internal")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        private List<string> GetPickUpTimes(List<GoogleApi.Entities.Maps.Directions.Response.Leg> legs)
+        {
+            var pickUpTimes = new List<string>();
+
+            foreach (var leg in legs)
+            {
+                // Convert departure time to string representation (e.g., "HH:mm")
+                string pickUpTime = leg.DepartureTime?.Value.ToString("HH:mm") ?? "Unknown";
+                pickUpTimes.Add(pickUpTime);
+            }
+
+            return pickUpTimes;
         }
 
         [Route("internal")]
@@ -185,9 +208,9 @@ namespace trempApplication.Properties.Controllers
 
         [Route("internal")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public List<Ride> FilterRoutes(List<Ride> routes, string userOrigin, string userDestination, double threshold)
+        public List<SuggestedRide> FilterRoutes(List<Ride> routes, string userOrigin, string userDestination, double threshold)
         {
-            List<Ride> relevantRoutes = new List<Ride>();
+            List<SuggestedRide> relevantRoutes = new List<SuggestedRide>();
             var relevance = 0.0;
 
             foreach (var route in routes)
@@ -197,17 +220,50 @@ namespace trempApplication.Properties.Controllers
                 
                 if (relevance >= threshold)
                 {
-                    var newRoute = result.Item1; 
-                    route.Duration = newRoute.Duration;
-                    route.Stations = newRoute.Waypoints;
-                    relevantRoutes.Add(route);
+                    var newRoute = result.Item1; // optinal route
+                    // build a suggested ride for the server 
+                    var suggestedRide = new SuggestedRide
+                    {
+                        Distance = newRoute.Distance, // updated
+                        Duration = newRoute.Duration, // updated
+                        Instructions = newRoute.Instructions, // updated
+                        Waypoints = newRoute.Waypoints, // updated
+                        PickUpTimes = newRoute.PickUpTimes, 
+
+                        RideId = route.Id, // old ride- if we get an approval, we will update this  
+                        Passenger = _passengerService.GetPassengerById(route.DriverId).Result.Passenger,
+                        PickUpPoint = userOrigin,
+                        PickUpTime = GetPickUpTimeByWayPoint(newRoute.Legs, userOrigin),
+                        Relevance = result.Item2,
+                        Capacity = route.Capacity
+                    };
+
+
+                    relevantRoutes.Add(suggestedRide);
                 }
 
             }
-            // need to change to route and order by relevance
-            return relevantRoutes;
+             relevantRoutes = relevantRoutes.OrderByDescending(r => r.Relevance).ToList();
+             return relevantRoutes;
         }
 
+        // Get pick-up times for specific addresses or waypoints
+        [Route("internal")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        private string GetPickUpTimeByWayPoint(List<Leg> legs, string waypointAddress)
+        {
+            foreach (var leg in legs)
+            {
+                if (leg.EndAddress.Equals(waypointAddress))
+                {
+                    // Convert departure time to string representation (e.g., "HH:mm")
+                    string pickUpTime = leg.DepartureTime?.Value.ToString("HH:mm") ?? "Unknown";
+                    return pickUpTime;
+                }
+            }
+
+            return "Not found";
+        }
 
         [HttpPost]
         public async Task<ActionResult> CalculateRoute([FromBody] MapRequest mapRequest)
@@ -239,7 +295,7 @@ namespace trempApplication.Properties.Controllers
             //var relevants = FilterRoutes(Routes, "Uziel 103, Ramat Gan", "Gindi Mall, Tel Aviv", 1.0);
             // return the best 
             var relevants = FilterRoutes(routes, mapRequest.Origin, mapRequest.Destination, 1.0);
-
+            // return suggested 
             return Ok(relevants);
 
         }
