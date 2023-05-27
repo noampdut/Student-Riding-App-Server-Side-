@@ -1,4 +1,5 @@
 ﻿using MongoDB.Driver;
+using System.Linq.Expressions;
 using trempApplication.Properties.Interfaces;
 using trempApplication.Properties.Models;
 
@@ -24,7 +25,7 @@ namespace trempApplication.Properties.Services
                 }
 
                 await ridesCollection.InsertOneAsync(ride);
-                return (true,ride.Id.ToString());
+                return (true, ride.Id.ToString());
             }
             catch (Exception ex)
             {
@@ -105,6 +106,114 @@ namespace trempApplication.Properties.Services
                 throw new Exception("Error updating ride in database", ex);
             }
         }
+        /*
+        public static bool IsCurrentTimeLessThanOrEqualToDate(Date driverDate)
+        {
+            // Convert input Date object to DateTime object
+            DateTime dateTime = new DateTime(Convert.ToInt32(driverDate.Year), Convert.ToInt32(driverDate.Month), Convert.ToInt32(driverDate.Day),
+                Convert.ToInt32(driverDate.Hour), Convert.ToInt32(driverDate.Minute), 0);
 
+            // Get the current date and time
+            DateTime now = DateTime.Now;
+
+            // Compare the current time with the input date
+            if (now <= dateTime)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+
+        public bool CheckTimeDifference(int timeDifference, Date date1, Date date2)
+        {
+
+            // Convert Date objects to DateTime objects
+            DateTime dateTime1 = new DateTime(Convert.ToInt32(date1.Year), Convert.ToInt32(date1.Month), Convert.ToInt32(date1.Day),
+                Convert.ToInt32(date1.Hour), Convert.ToInt32(date1.Minute), 0);
+
+            DateTime dateTime2 = new DateTime(Convert.ToInt32(date2.Year), Convert.ToInt32(date2.Month), Convert.ToInt32(date2.Day),
+                Convert.ToInt32(date2.Hour), Convert.ToInt32(date2.Minute), 0);
+
+            // Calculate time difference
+            TimeSpan difference = dateTime2 - dateTime1;
+
+            // Check if time difference is within 20 minutes
+            if (difference.TotalMinutes <= timeDifference)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
+        }
+
+        public bool CompareCapacity(int capacity, int wayPointsCount)
+        {
+            if (capacity > wayPointsCount)
+            {
+                return true;
+            }
+            return false;
+        }
+        */
+
+       // private Expression<Func<Ride, bool>> IsCurrentTimeLessThanOrEqualToDate(Date date, Date uDate)
+        //{
+          //  DateTime currentDate = new DateTime(Convert.ToInt32(date.Year), Convert.ToInt32(date.Month), Convert.ToInt32(date.Day), Convert.ToInt32(date.Hour), Convert.ToInt32(date.Minute), 0, DateTimeKind.Utc);
+            //DateTime targetDate = new DateTime(Convert.ToInt32(uDate.Year), Convert.ToInt32(uDate.Month), Convert.ToInt32(uDate.Day), Convert.ToInt32(uDate.Hour), Convert.ToInt32(uDate.Minute), 0, DateTimeKind.Utc);
+
+            //return u => u.Date <= currentDate;
+        //}
+
+        private Expression<Func<Ride, bool>> CheckTimeDifference(int minutes, Date date1, Date date2)
+        {
+            DateTime currentDate = new DateTime(Convert.ToInt32(date1.Year), Convert.ToInt32(date1.Month), Convert.ToInt32(date1.Day), Convert.ToInt32(date1.Hour), Convert.ToInt32(date1.Minute), 0, DateTimeKind.Utc);
+            DateTime targetDate = new DateTime(Convert.ToInt32(date2.Year), Convert.ToInt32(date2.Month), Convert.ToInt32(date2.Day), Convert.ToInt32(date2.Hour), Convert.ToInt32(date2.Minute), 0, DateTimeKind.Utc);
+
+            TimeSpan timeDifference = currentDate - targetDate;
+            return u => timeDifference.TotalMinutes <= minutes;
+        }
+
+        private Expression<Func<Ride, bool>> CompareCapacity(int capacity, int stationCount)
+        {
+            return u => u.Capacity > stationCount;
+        }
+        public async Task<(bool IsSuccess, List<Ride> Rides, string ErrorMessage)> GetPotentialRides(Date uDate, bool ToUniversity)
+        {
+             try
+             {
+
+                 var initialFilter = Builders<Ride>.Filter.Eq(u => u.ToUniversity, ToUniversity);
+
+                 var rides = await ridesCollection.Find(initialFilter).ToListAsync();
+
+                 var filteredRides = new List<Ride>();
+                /* foreach (var ride in rides)
+                 {
+                     if (CheckTimeDifference(20, ride.Date, uDate). && CompareCapacity(ride.Capacity, ride.Stations.Count))
+                     {
+                         filteredRides.Add(ride);
+                     }
+                 }*/
+
+
+                 if (rides != null && rides.Any())
+                 {
+                     return (true, rides, null);
+                 }
+
+                 return (false, null, "No rides found");
+             }
+             catch (Exception ex)
+             {
+                 throw new Exception("Error getting potential rides from database", ex);
+             }
+            
+        }
     }
-}
+    }

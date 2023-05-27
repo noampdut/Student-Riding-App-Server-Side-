@@ -8,6 +8,7 @@ using GoogleApi.Entities.Common;
 using GoogleMapsAPI.NET.API;
 using GoogleApi.Entities.Maps.Common;
 using trempApplication.Properties.Models;
+using trempApplication.Properties.Interfaces;
 
 namespace trempApplication.Properties.Controllers
 {
@@ -15,7 +16,15 @@ namespace trempApplication.Properties.Controllers
     [ApiController]
     public class RouteController : ControllerBase
     {
-        
+
+
+        private IRide _rideService;
+
+        public RouteController(IRide rideService)
+        {
+            _rideService = rideService;
+        }
+
         /*
         // for client 
         [HttpPost]
@@ -46,7 +55,28 @@ namespace trempApplication.Properties.Controllers
 
         [Route("internal")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public OptionalRoute CalculateOptionalRoute(string origin, string destination, List<string> waypoints)
+        public System.DateTime ConvertToDate(Models.Date date1)
+        {
+            System.DateTime dateTime = new System.DateTime(Convert.ToInt32(date1.Year), Convert.ToInt32(date1.Month), Convert.ToInt32(date1.Day),
+            Convert.ToInt32(date1.Hour), Convert.ToInt32(date1.Minute), 0);
+            return dateTime;
+        }
+
+        [Route("internal")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<List<Ride>> GetPotentialRides(Models.Date uDate, bool toUniversity)
+        {
+            var result = await _rideService.GetPotentialRides(uDate, toUniversity);
+            if (result.IsSuccess)
+            {
+                return result.Rides;
+            }
+            return null;
+        }
+
+        [Route("internal")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public OptionalRoute CalculateOptionalRoute([FromQuery] string origin, [FromQuery] string destination, [FromQuery] List<string> waypoints, [FromQuery] Models.Date date)
         {
 
             DirectionsRequest request = new DirectionsRequest();
@@ -56,6 +86,7 @@ namespace trempApplication.Properties.Controllers
             request.Destination = new LocationEx(new GoogleApi.Entities.Common.Address(destination));
             request.WayPoints = waypoints?.Select(w => new GoogleApi.Entities.Maps.Directions.Request.WayPoint(new LocationEx(new GoogleApi.Entities.Common.Address(w))));
             request.OptimizeWaypoints = true;
+            request.DepartureTime = ConvertToDate(date);
 
             var response = GoogleApi.GoogleMaps.Directions.Query(request);
 
@@ -83,7 +114,7 @@ namespace trempApplication.Properties.Controllers
             List<string> waypoints = new List<string>();
 
             // calculate distance between the origin and dest of both driver and passenger
-            if (CalculateOptionalRoute(drive.Source, origin, waypoints).Distance <= 3)
+            if (CalculateOptionalRoute(drive.Source, origin, waypoints, drive.Date).Distance <= 3)
             {
                 relevance += originWeight;
             }
@@ -92,7 +123,7 @@ namespace trempApplication.Properties.Controllers
                 relevance -= originWeight;
             }
 
-            if (CalculateOptionalRoute(drive.Dest, destination, waypoints).Distance <= 3)
+            if (CalculateOptionalRoute(drive.Dest, destination, waypoints, drive.Date).Distance <= 3)
             {
                 relevance += originWeight;
             }
@@ -119,7 +150,7 @@ namespace trempApplication.Properties.Controllers
 
 
              // create a new route base on the client wayPoint
-             OptionalRoute newRoute = CalculateOptionalRoute(drive.Source, drive.Dest, waypoints);
+             OptionalRoute newRoute = CalculateOptionalRoute(drive.Source, drive.Dest, waypoints, drive.Date);
 
             // calculate the time was added to the original drive 
             double addTimeToDrive = newRoute.Duration - drive.Duration;
@@ -181,8 +212,8 @@ namespace trempApplication.Properties.Controllers
         [HttpPost]
         public async Task<ActionResult> CalculateRoute([FromBody] MapRequest mapRequest)
         {
-            List<Ride> Routes = new List<Ride>();
-
+            //List<Ride> Routes = new List<Ride>();
+            var routes = GetPotentialRides(mapRequest.Date, mapRequest.ToUniversity).Result;
             var Route1 = new Ride
             {
                 Source = "Hasar Moshe 9, Ramat Gan",
@@ -203,10 +234,11 @@ namespace trempApplication.Properties.Controllers
                 Stations = new List<string>()
             };
 
-            Routes.Add(Route1);
-            Routes.Add(Route2);
+            //Routes.Add(Route1);
+            //Routes.Add(Route2);
             //var relevants = FilterRoutes(Routes, "Uziel 103, Ramat Gan", "Gindi Mall, Tel Aviv", 1.0);
-            var relevants = FilterRoutes(Routes, mapRequest.Origin, mapRequest.Destination, 1.0);
+            // return the best 
+            var relevants = FilterRoutes(routes, mapRequest.Origin, mapRequest.Destination, 1.0);
 
             return Ok(relevants);
 
