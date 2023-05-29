@@ -127,31 +127,6 @@ namespace trempApplication.Properties.Services
             }
         }
 
-        public bool CheckTimeDifference(int timeDifference, Date date1, Date date2)
-        {
-
-            // Convert Date objects to DateTime objects
-            DateTime dateTime1 = new DateTime(Convert.ToInt32(date1.Year), Convert.ToInt32(date1.Month), Convert.ToInt32(date1.Day),
-                Convert.ToInt32(date1.Hour), Convert.ToInt32(date1.Minute), 0);
-
-            DateTime dateTime2 = new DateTime(Convert.ToInt32(date2.Year), Convert.ToInt32(date2.Month), Convert.ToInt32(date2.Day),
-                Convert.ToInt32(date2.Hour), Convert.ToInt32(date2.Minute), 0);
-
-            // Calculate time difference
-            TimeSpan difference = dateTime2 - dateTime1;
-
-            // Check if time difference is within 20 minutes
-            if (difference.TotalMinutes <= timeDifference)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-
-        }
-
         public bool CompareCapacity(int capacity, int wayPointsCount)
         {
             if (capacity > wayPointsCount)
@@ -170,7 +145,7 @@ namespace trempApplication.Properties.Services
             //return u => u.Date <= currentDate;
         //}
 
-        private Expression<Func<Ride, bool>> CheckTimeDifference(int minutes, Date date1, Date date2)
+        private Expression<Func<Ride, bool>> CheckTimeDifference2(int minutes, Date date1, Date date2)
         {
             DateTime currentDate = new DateTime(Convert.ToInt32(date1.Year), Convert.ToInt32(date1.Month), Convert.ToInt32(date1.Day), Convert.ToInt32(date1.Hour), Convert.ToInt32(date1.Minute), 0, DateTimeKind.Utc);
             DateTime targetDate = new DateTime(Convert.ToInt32(date2.Year), Convert.ToInt32(date2.Month), Convert.ToInt32(date2.Day), Convert.ToInt32(date2.Hour), Convert.ToInt32(date2.Minute), 0, DateTimeKind.Utc);
@@ -193,14 +168,24 @@ namespace trempApplication.Properties.Services
                  var rides = await ridesCollection.Find(initialFilter).ToListAsync();
 
                  var filteredRides = new List<Ride>();
-                /* foreach (var ride in rides)
+                 foreach (var ride in rides)
                  {
-                     if (CheckTimeDifference(20, ride.Date, uDate). && CompareCapacity(ride.Capacity, ride.Stations.Count))
-                     {
-                         filteredRides.Add(ride);
-                     }
-                 }*/
 
+                    int totalWaypoints = ride.Stations.Count;
+                    int maxWaypointsThreshold = ride.Capacity;
+
+                    // checking if number of stops is higher or equal to the capacity
+                    if (totalWaypoints >= maxWaypointsThreshold) {
+                        continue;
+                    }
+
+                    // if time differnce is not ok 
+                    if(CheckTimeDifference(60,uDate, ride.Date) == false) { continue; }
+
+                   filteredRides.Add(ride);
+                     
+                 }
+            
 
                  if (rides != null && rides.Any())
                  {
@@ -214,6 +199,31 @@ namespace trempApplication.Properties.Services
                  throw new Exception("Error getting potential rides from database", ex);
              }
             
+        }
+
+        private bool CheckTimeDifference(int timeDifference, Date date1, Date date2)
+        {
+
+            // Convert Date objects to DateTime objects
+            DateTime dateTime1 = new DateTime(Convert.ToInt32(date1.Year), Convert.ToInt32(date1.Month), Convert.ToInt32(date1.Day),
+                Convert.ToInt32(date1.Hour), Convert.ToInt32(date1.Minute), 0);
+
+            DateTime dateTime2 = new DateTime(Convert.ToInt32(date2.Year), Convert.ToInt32(date2.Month), Convert.ToInt32(date2.Day),
+                Convert.ToInt32(date2.Hour), Convert.ToInt32(date2.Minute), 0);
+
+            // Calculate time difference
+            TimeSpan difference = dateTime2 - dateTime1;
+
+            // Check if time difference is within an hour
+            if ((difference.TotalMinutes <= timeDifference) && (difference.TotalMinutes >= -timeDifference))
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+
         }
     }
     }

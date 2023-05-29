@@ -1,4 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using GoogleApi.Entities.Maps.Common;
+using GoogleApi.Entities.Maps.Directions.Request;
+using Microsoft.AspNetCore.Mvc;
 using trempApplication.Properties.Interfaces;
 using trempApplication.Properties.Models;
 
@@ -45,6 +47,15 @@ namespace trempApplication.Properties.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Ride ride)
         {
+            var mapRequest = new MapRequest
+            {
+                Origin = ride.Source,
+                Destination = ride.Dest,
+                Waypoints = ride.Stations,
+                Date = ride.Date,
+                ToUniversity = ride.ToUniversity
+            };
+            ride.Duration = CalculateRoute(mapRequest).Result;
             var result = await _rideService.AddRide(ride);
             if (result.IsSuccess)
             {
@@ -78,6 +89,28 @@ namespace trempApplication.Properties.Controllers
                 return NoContent();
             }
             return BadRequest(result.ErrorMessage);
+        }
+
+        // for client 
+        [Route("internal")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<double> CalculateRoute([FromBody] MapRequest mapRequest)
+        {
+
+            DirectionsRequest request = new DirectionsRequest();
+
+            request.Key = "AIzaSyB5po3YPH779Mj38ut1Bc_ULPWEkO9V5pc";
+
+            request.Origin = new LocationEx(new GoogleApi.Entities.Common.Address(mapRequest.Origin));
+            request.Destination = new LocationEx(new GoogleApi.Entities.Common.Address(mapRequest.Destination));
+            request.WayPoints = mapRequest.Waypoints?.Select(w => new GoogleApi.Entities.Maps.Directions.Request.WayPoint(new LocationEx(new GoogleApi.Entities.Common.Address(w))));
+            request.OptimizeWaypoints = true;
+
+            var response = await GoogleApi.GoogleMaps.Directions.QueryAsync(request);
+
+            var duration = Math.Ceiling(response.Routes.First().Legs.Sum(leg => leg.DurationInTraffic?.Value ?? leg.Duration.Value / 60.0));
+
+            return duration;
         }
     }
 }

@@ -27,33 +27,8 @@ namespace trempApplication.Properties.Controllers
             _passengerService = passengerService;
         }
 
-        /*
-        // for client 
-        [HttpPost]
-        public async Task<ActionResult> CalculateRoute1([FromBody] MapRequest mapRequest)
-        {
 
-            DirectionsRequest request = new DirectionsRequest();
 
-            request.Key = "AIzaSyB5po3YPH779Mj38ut1Bc_ULPWEkO9V5pc";
-
-            request.Origin = new LocationEx(new GoogleApi.Entities.Common.Address(mapRequest.Origin));
-            request.Destination = new LocationEx(new GoogleApi.Entities.Common.Address(mapRequest.Destination));
-            request.WayPoints = mapRequest.Waypoints?.Select(w => new GoogleApi.Entities.Maps.Directions.Request.WayPoint(new LocationEx(new GoogleApi.Entities.Common.Address(w))));
-            request.OptimizeWaypoints = true;
-            
-            var response = await GoogleApi.GoogleMaps.Directions.QueryAsync(request);
-            var route = new OptionalRoute
-            {
-                Distance = Math.Round(response.Routes.First().Legs.Sum(leg => leg.Distance.Value / 1000.0),1),
-                Duration = Math.Ceiling(response.Routes.First().Legs.Sum(leg => leg.DurationInTraffic?.Value ?? leg.Duration.Value / 60.0)),
-                Instructions = response.Routes.First().Legs.SelectMany(leg => leg.Steps.Select(step => step.HtmlInstructions)).ToList()
-            };
-
-            return Ok(route);
-        }
-
-        */
 
         [Route("internal")]
         [ApiExplorerSettings(IgnoreApi = true)]
@@ -196,7 +171,7 @@ namespace trempApplication.Properties.Controllers
             // Check if the total number of waypoints exceeds the threshold
             if (totalWaypoints > maxWaypointsThreshold)
             {
-                relevance = -1;
+                relevance = -50;
                 //return new Tuple<OptionalRoute, double>(newRoute, relevance); 
             }
             else
@@ -272,32 +247,10 @@ namespace trempApplication.Properties.Controllers
         {
             //List<Ride> Routes = new List<Ride>();
             var routes = GetPotentialRides(mapRequest.Date, mapRequest.ToUniversity).Result;
-            var Route1 = new Ride
-            {
-                Source = "Hasar Moshe 9, Ramat Gan",
-                Dest = "Ayalon Mall",
-                Duration = 25,
-                Capacity = 4,
-                ToUniversity = false,
-                Stations = new List<string>()
-        };
-
-            var Route2 = new Ride
-            {
-                Source = "Hasar Moshe 9, Ramat Gan",
-                Dest = "Gindi Mall, Tel Aviv",
-                Duration = 30,
-                Capacity = 4,
-                ToUniversity = false,
-                Stations = new List<string>()
-            };
-
-            //Routes.Add(Route1);
-            //Routes.Add(Route2);
-            //var relevants = FilterRoutes(Routes, "Uziel 103, Ramat Gan", "Gindi Mall, Tel Aviv", 1.0);
-            // return the best 
+            
             var relevants = FilterRoutes(routes, mapRequest.Origin, mapRequest.Destination, 1.0);
             // return suggested 
+            Guid id = relevants.First().RideId;
             return Ok(relevants);
 
         }
