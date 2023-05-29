@@ -189,7 +189,7 @@ namespace trempApplication.Properties.Services
 
                  if (rides != null && rides.Any())
                  {
-                     return (true, rides, null);
+                     return (true, filteredRides, null);
                  }
 
                  return (false, null, "No rides found");

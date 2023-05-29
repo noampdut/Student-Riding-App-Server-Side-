@@ -250,7 +250,6 @@ namespace trempApplication.Properties.Controllers
             
             var relevants = FilterRoutes(routes, mapRequest.Origin, mapRequest.Destination, 1.0);
             // return suggested 
-            Guid id = relevants.First().RideId;
             return Ok(relevants);
 
         }
