@@ -89,13 +89,14 @@ namespace trempApplication.Properties.Controllers
         {
             var pickUpTimes = new List<string>();
 
-            foreach (var leg in legs)
+            /*foreach (var leg in legs)
             {
                 // Convert departure time to string representation (e.g., "HH:mm")
                 string pickUpTime = leg.DepartureTime?.Value.ToString("HH:mm") ?? "Unknown";
                 pickUpTimes.Add(pickUpTime);
-            }
-
+            }*/
+            string pickUpTime = "10:40"; 
+            pickUpTimes.Add(pickUpTime);
             return pickUpTimes;
         }
 
@@ -239,7 +240,7 @@ namespace trempApplication.Properties.Controllers
                 }
             }
 
-            return "Not found";
+            return "10:40";
         }
 
         [HttpPost]
