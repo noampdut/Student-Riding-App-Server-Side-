@@ -8,8 +8,8 @@
         
         public List<string> Waypoints { get; set; }
 
-        public List<string> PickUpTimes { get; set; }
-        public string PickUpCurrent { get; set; }
+        public Dictionary<string, string> WaypointTimes { get; set; }
+        //public string PickUpCurrent { get; set; }
 
         public List<GoogleApi.Entities.Maps.Directions.Response.Leg> Legs  { get; set; }
     }

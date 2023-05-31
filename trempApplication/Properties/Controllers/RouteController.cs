@@ -9,6 +9,7 @@ using GoogleMapsAPI.NET.API;
 using GoogleApi.Entities.Maps.Common;
 using trempApplication.Properties.Models;
 using trempApplication.Properties.Interfaces;
+using GoogleApi.Entities.Maps.Common.Enums;
 
 namespace trempApplication.Properties.Controllers
 {
@@ -63,6 +64,7 @@ namespace trempApplication.Properties.Controllers
             request.Destination = new LocationEx(new GoogleApi.Entities.Common.Address(destination));
             request.WayPoints = waypoints?.Select(w => new GoogleApi.Entities.Maps.Directions.Request.WayPoint(new LocationEx(new GoogleApi.Entities.Common.Address(w))));
             request.OptimizeWaypoints = true;
+            request.TravelMode = TravelMode.Driving;
             request.DepartureTime = ConvertToDate(date);
 
             var response = GoogleApi.GoogleMaps.Directions.Query(request);
@@ -76,30 +78,22 @@ namespace trempApplication.Properties.Controllers
                 Legs = response.Routes.First().Legs.ToList()
             };
             // Retrieve the pick-up times for each leg
-            route.PickUpTimes = GetPickUpTimes(response.Routes.First().Legs.ToList());
+            var pickUpTimes = CalculatePickUpTimes(response.Routes.First().Legs.ToList(), route.Duration, ConvertToDate(date));
+
+            var waypointTimes = new Dictionary<string, string>();
+            foreach (var waypoint in waypoints)
+            {
+                var arrivalTime = GetPickUpTimeByWayPoint(response.Routes.First().Legs.ToList(), waypoint, pickUpTimes);
+                waypointTimes.Add(waypoint, arrivalTime);
+            }
+
+            route.WaypointTimes = waypointTimes;
 
             return route;
 
         }
 
-        // Get pick-up times for each leg of the route
-        [Route("internal")]
-        [ApiExplorerSettings(IgnoreApi = true)]
-        private List<string> GetPickUpTimes(List<GoogleApi.Entities.Maps.Directions.Response.Leg> legs)
-        {
-            var pickUpTimes = new List<string>();
-
-            /*foreach (var leg in legs)
-            {
-                // Convert departure time to string representation (e.g., "HH:mm")
-                string pickUpTime = leg.DepartureTime?.Value.ToString("HH:mm") ?? "Unknown";
-                pickUpTimes.Add(pickUpTime);
-            }*/
-            string pickUpTime = "10:40"; 
-            pickUpTimes.Add(pickUpTime);
-            return pickUpTimes;
-        }
-
+       
         [Route("internal")]
         [ApiExplorerSettings(IgnoreApi = true)]
         private Tuple<OptionalRoute, double> CalculateRelevance(Ride drive, string origin, string destination)
@@ -206,12 +200,12 @@ namespace trempApplication.Properties.Controllers
                         Duration = newRoute.Duration, // updated
                         Instructions = newRoute.Instructions, // updated
                         Waypoints = newRoute.Waypoints, // updated
-                        PickUpTimes = newRoute.PickUpTimes, 
+                        WaypointTimes = newRoute.WaypointTimes, 
 
                         RideId = route.Id, // old ride- if we get an approval, we will update this  
                         DriverName = _passengerService.GetPassengerById(route.DriverId).Result.Passenger,
                         PickUpPoint = userOrigin,
-                        PickUpTime = GetPickUpTimeByWayPoint(newRoute.Legs, userOrigin),
+                        PickUpTime = newRoute.WaypointTimes[userOrigin],
                         Relevance = result.Item2,
                         Capacity = route.Capacity
                     };
@@ -225,28 +219,45 @@ namespace trempApplication.Properties.Controllers
              return relevantRoutes;
         }
 
-        // Get pick-up times for specific addresses or waypoints
+       
+
         [Route("internal")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        private string GetPickUpTimeByWayPoint(List<Leg> legs, string waypointAddress)
+        private string GetPickUpTimeByWayPoint(List<Leg> legs, string waypointAddress, List<string> pickUpTimes)
         {
             foreach (var leg in legs)
             {
                 if (leg.EndAddress.Equals(waypointAddress))
                 {
-                    // Convert departure time to string representation (e.g., "HH:mm")
-                    string pickUpTime = leg.DepartureTime?.Value.ToString("HH:mm") ?? "Unknown";
-                    return pickUpTime;
+                    return pickUpTimes[legs.IndexOf(leg)];
                 }
             }
 
-            return "10:40";
+            return "Unknown";
+        }
+
+        [Route("internal")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        private List<string> CalculatePickUpTimes(List<Leg> legs, double routeDuration, System.DateTime departureTime)
+        {
+            var pickUpTimes = new List<string>();
+            double accumulatedDuration = 0;
+
+            foreach (var leg in legs)
+            {
+                var estimatedArrivalTime = departureTime.AddSeconds(accumulatedDuration + (leg.Duration?.Value ?? 0));
+                pickUpTimes.Add(estimatedArrivalTime.ToString("HH:mm"));
+
+                accumulatedDuration += leg.Duration?.Value ?? 0;
+            }
+
+            return pickUpTimes;
         }
 
         [HttpPost]
         public async Task<ActionResult> CalculateRoute([FromBody] MapRequest mapRequest)
         {
-            //List<Ride> Routes = new List<Ride>();
+           
             var routes = GetPotentialRides(mapRequest.Date, mapRequest.ToUniversity).Result;
             
             var relevants = FilterRoutes(routes, mapRequest.Origin, mapRequest.Destination, 1.0);
