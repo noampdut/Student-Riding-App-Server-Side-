@@ -17,7 +17,7 @@
 
         public List<string> Waypoints { get; set; }
 
-        public Dictionary<string, string> WaypointTimes { get; set; }
+        public Dictionary<string, string> PickUpTimes { get; set; }
 
         public Passenger DriverName { get; set; }
         /// <summary>

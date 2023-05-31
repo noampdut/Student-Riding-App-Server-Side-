@@ -12,7 +12,7 @@
         public Date Date { get; set; } 
         public List<Guid> PassengerIds { get; set; }
         public List<string> Stations { get; set; }
-        public Dictionary<string, string> WaypointTimes { get; set; }
+        public Dictionary<string, string> PickUpTimes { get; set; }
         public double Duration { get; set; }
 
 

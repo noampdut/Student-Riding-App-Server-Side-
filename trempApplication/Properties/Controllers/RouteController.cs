@@ -87,7 +87,7 @@ namespace trempApplication.Properties.Controllers
                 waypointTimes.Add(waypoint, arrivalTime);
             }
 
-            route.WaypointTimes = waypointTimes;
+            route.PickUpTimes = waypointTimes;
 
             return route;
 
@@ -200,12 +200,12 @@ namespace trempApplication.Properties.Controllers
                         Duration = newRoute.Duration, // updated
                         Instructions = newRoute.Instructions, // updated
                         Waypoints = newRoute.Waypoints, // updated
-                        WaypointTimes = newRoute.WaypointTimes, 
+                        PickUpTimes = newRoute.PickUpTimes, 
 
                         RideId = route.Id, // old ride- if we get an approval, we will update this  
                         DriverName = _passengerService.GetPassengerById(route.DriverId).Result.Passenger,
                         PickUpPoint = userOrigin,
-                        PickUpTime = newRoute.WaypointTimes[userOrigin],
+                        PickUpTime = newRoute.PickUpTimes[userOrigin],
                         Relevance = result.Item2,
                         Capacity = route.Capacity
                     };
