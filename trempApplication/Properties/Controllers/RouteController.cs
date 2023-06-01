@@ -74,20 +74,24 @@ namespace trempApplication.Properties.Controllers
                 Distance = Math.Round(response.Routes.First().Legs.Sum(leg => leg.Distance.Value / 1000.0), 1),
                 Duration = Math.Ceiling(response.Routes.First().Legs.Sum(leg => leg.DurationInTraffic?.Value ?? leg.Duration.Value / 60.0)),
                 Instructions = response.Routes.First().Legs.SelectMany(leg => leg.Steps.Select(step => step.HtmlInstructions)).ToList(),
-                Waypoints = waypoints,
                 Legs = response.Routes.First().Legs.ToList()
             };
             // Retrieve the pick-up times for each leg
             var pickUpTimes = CalculatePickUpTimes(response.Routes.First().Legs.ToList(), route.Duration, ConvertToDate(date));
-
-            var waypointTimes = new Dictionary<string, string>();
+            List<PickUpPoint> PickUpPoints = new List<PickUpPoint>(); 
             foreach (var waypoint in waypoints)
             {
                 var arrivalTime = GetPickUpTimeByWayPoint(response.Routes.First().Legs.ToList(), waypoint, pickUpTimes);
-                waypointTimes.Add(waypoint, arrivalTime);
+                var pickUpPoint = new PickUpPoint
+                {
+                    Time = arrivalTime,
+                    Address = waypoint,
+                };
+                
+                PickUpPoints.Add(pickUpPoint);
             }
 
-            route.PickUpTimes = waypointTimes;
+            route.pickUpPoints = PickUpPoints;
 
             return route;
 
@@ -137,8 +141,9 @@ namespace trempApplication.Properties.Controllers
                 waypoints.Add(destination);
             }
 
-            foreach (var waypoint in drive.Stations)
-            { 
+            foreach (var pickUpPoint in drive.pickUpPoints)
+            {
+                var waypoint = pickUpPoint.Address;
                 waypoints.Add(waypoint);
             }
 
@@ -160,14 +165,13 @@ namespace trempApplication.Properties.Controllers
             }
 
             
-            int totalWaypoints = newRoute.Waypoints.Count;
+            int totalWaypoints = newRoute.pickUpPoints.Count;
             int maxWaypointsThreshold = drive.Capacity;
 
             // Check if the total number of waypoints exceeds the threshold
             if (totalWaypoints > maxWaypointsThreshold)
             {
                 relevance = -50;
-                //return new Tuple<OptionalRoute, double>(newRoute, relevance); 
             }
             else
             {
@@ -199,17 +203,24 @@ namespace trempApplication.Properties.Controllers
                         Distance = newRoute.Distance, // updated
                         Duration = newRoute.Duration, // updated
                         Instructions = newRoute.Instructions, // updated
-                        Waypoints = newRoute.Waypoints, // updated
-                        PickUpTimes = newRoute.PickUpTimes, 
-
+                        pickUpPoints = newRoute.pickUpPoints,
+                      
                         RideId = route.Id, // old ride- if we get an approval, we will update this  
-                        DriverName = _passengerService.GetPassengerById(route.DriverId).Result.Passenger,
+                        Driver = _passengerService.GetPassengerById(route.DriverId).Result.Passenger,
                         PickUpPoint = userOrigin,
-                        PickUpTime = newRoute.PickUpTimes[userOrigin],
                         Relevance = result.Item2,
                         Capacity = route.Capacity
                     };
 
+                    // update the pickup time of the client in suggestedRide object
+                    foreach (var pickUpPoint in newRoute.pickUpPoints)
+                    {
+                        if(pickUpPoint.Address == userOrigin) {
+                            string pickUpTime = pickUpPoint.Time;
+                            suggestedRide.PickUpTime = pickUpTime;
+                            break;
+                        }
+                    }
 
                     relevantRoutes.Add(suggestedRide);
                 }

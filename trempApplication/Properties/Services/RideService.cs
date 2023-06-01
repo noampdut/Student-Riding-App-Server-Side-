@@ -171,7 +171,7 @@ namespace trempApplication.Properties.Services
                  foreach (var ride in rides)
                  {
 
-                    int totalWaypoints = ride.Stations.Count;
+                    int totalWaypoints = ride.pickUpPoints.Count;
                     int maxWaypointsThreshold = ride.Capacity;
 
                     // checking if number of stops is higher or equal to the capacity

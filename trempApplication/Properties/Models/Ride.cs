@@ -10,9 +10,11 @@
         public string Dest { get; set; }
         public bool ToUniversity { get; set; }
         public Date Date { get; set; } 
-        public List<Guid> PassengerIds { get; set; }
-        public List<string> Stations { get; set; }
-        public Dictionary<string, string> PickUpTimes { get; set; }
+       // public List<Guid> PassengerIds { get; set; }
+       // public List<string> Stations { get; set; }
+
+        public List<PickUpPoint> pickUpPoints { get; set; }
+      //  public Dictionary<string, string> PickUpTimes { get; set; }
         public double Duration { get; set; }
 
 

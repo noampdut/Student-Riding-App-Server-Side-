@@ -47,14 +47,22 @@ namespace trempApplication.Properties.Controllers
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Ride ride)
         {
+            List<string> mapR_waypoints = new List<string>();
             var mapRequest = new MapRequest
             {
                 Origin = ride.Source,
                 Destination = ride.Dest,
-                Waypoints = ride.Stations,
                 Date = ride.Date,
                 ToUniversity = ride.ToUniversity
             };
+
+            foreach (var pickUpPoint in ride.pickUpPoints)
+            {
+                string waypoint = pickUpPoint.Address;
+                mapR_waypoints.Add(waypoint);
+            }
+            mapRequest.Waypoints = mapR_waypoints;
+
             ride.Duration = CalculateRoute(mapRequest).Result;
             var result = await _rideService.AddRide(ride);
             if (result.IsSuccess)

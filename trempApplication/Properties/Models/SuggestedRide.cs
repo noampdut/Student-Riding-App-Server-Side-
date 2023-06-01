@@ -15,11 +15,13 @@
         public double Duration { get; set; } // total time
         public List<string> Instructions { get; set; } // list of step-by-step instructions
 
-        public List<string> Waypoints { get; set; }
+        //public List<string> Waypoints { get; set; }
 
-        public Dictionary<string, string> PickUpTimes { get; set; }
+      //  public Dictionary<string, string> PickUpTimes { get; set; }
 
-        public Passenger DriverName { get; set; }
+        public List<PickUpPoint> pickUpPoints { get; set; }
+
+        public Passenger Driver { get; set; }
         /// <summary>
         /// in order to show detaild to the new friend 
         /// </summary>

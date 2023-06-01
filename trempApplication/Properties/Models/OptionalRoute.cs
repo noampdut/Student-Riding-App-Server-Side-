@@ -6,10 +6,12 @@
         public double Duration { get; set; }
         public List<string> Instructions { get; set; } // list of step-by-step instructions
         
-        public List<string> Waypoints { get; set; }
+       // public List<string> Waypoints { get; set; }
 
-        public Dictionary<string, string> PickUpTimes { get; set; }
+       // public Dictionary<string, string> PickUpTimes { get; set; }
         //public string PickUpCurrent { get; set; }
+
+        public List<PickUpPoint> pickUpPoints { get; set; }
 
         public List<GoogleApi.Entities.Maps.Directions.Response.Leg> Legs  { get; set; }
     }
