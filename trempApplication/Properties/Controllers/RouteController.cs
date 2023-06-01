@@ -79,13 +79,19 @@ namespace trempApplication.Properties.Controllers
             // Retrieve the pick-up times for each leg
             var pickUpTimes = CalculatePickUpTimes(response.Routes.First().Legs.ToList(), route.Duration, ConvertToDate(date));
             List<PickUpPoint> PickUpPoints = new List<PickUpPoint>(); 
-            foreach (var waypoint in waypoints)
+            foreach (var leg in route.Legs)
             {
+                if (leg == route.Legs.Last())
+                {                      
+                    continue;
+                }
+                var waypoint = leg.EndAddress;
+                //var convert_waypoint = new LocationEx(new GoogleApi.Entities.Common.Address(waypoint));
                 var arrivalTime = GetPickUpTimeByWayPoint(response.Routes.First().Legs.ToList(), waypoint, pickUpTimes);
                 var pickUpPoint = new PickUpPoint
                 {
                     Time = arrivalTime,
-                    Address = waypoint,
+                    Address = waypoint
                 };
                 
                 PickUpPoints.Add(pickUpPoint);
