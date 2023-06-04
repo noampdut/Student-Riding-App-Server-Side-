@@ -14,5 +14,7 @@
         public List<PickUpPoint> pickUpPoints { get; set; }
 
         public List<GoogleApi.Entities.Maps.Directions.Response.Leg> Legs  { get; set; }
+
+        public string PickUpPoint { get; set; }
     }
 }

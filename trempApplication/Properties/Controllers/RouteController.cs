@@ -74,7 +74,8 @@ namespace trempApplication.Properties.Controllers
                 Distance = Math.Round(response.Routes.First().Legs.Sum(leg => leg.Distance.Value / 1000.0), 1),
                 Duration = Math.Ceiling(response.Routes.First().Legs.Sum(leg => leg.DurationInTraffic?.Value ?? leg.Duration.Value / 60.0)),
                 Instructions = response.Routes.First().Legs.SelectMany(leg => leg.Steps.Select(step => step.HtmlInstructions)).ToList(),
-                Legs = response.Routes.First().Legs.ToList()
+                Legs = response.Routes.First().Legs.ToList(),
+              //  pickUpPoints = NEED TO TAKE AS AN ARG TO FUNCTION AND UPDATE HERE, FOR THE PASSENGER ID AND THE TIMEOUT POINT
             };
             // Retrieve the pick-up times for each leg
             var pickUpTimes = CalculatePickUpTimes(response.Routes.First().Legs.ToList(), route.Duration, ConvertToDate(date));
@@ -88,6 +89,7 @@ namespace trempApplication.Properties.Controllers
                 var waypoint = leg.EndAddress;
                 //var convert_waypoint = new LocationEx(new GoogleApi.Entities.Common.Address(waypoint));
                 var arrivalTime = GetPickUpTimeByWayPoint(response.Routes.First().Legs.ToList(), waypoint, pickUpTimes);
+                // all pickup times update 
                 var pickUpPoint = new PickUpPoint
                 {
                     Time = arrivalTime,
@@ -210,10 +212,10 @@ namespace trempApplication.Properties.Controllers
                         Duration = newRoute.Duration, // updated
                         Instructions = newRoute.Instructions, // updated
                         pickUpPoints = newRoute.pickUpPoints,
-                      
+                        
                         RideId = route.Id, // old ride- if we get an approval, we will update this  
                         Driver = _passengerService.GetPassengerById(route.DriverId).Result.Passenger,
-                        PickUpPoint = userOrigin,
+                       // PickUpPoint = userOrigin,
                         Relevance = result.Item2,
                         Capacity = route.Capacity
                     };
@@ -221,16 +223,27 @@ namespace trempApplication.Properties.Controllers
                     // update the pickup time of the client in suggestedRide object
                     foreach (var pickUpPoint in newRoute.pickUpPoints)
                     {
-                        if(pickUpPoint.Address == userOrigin) {
+                        var flag = 0;
+                        foreach (var Point in route.pickUpPoints)
+                        {
+                            // looking for the new address of the new client 
+                            if(pickUpPoint.Address == Point.Address)
+                            {
+                                flag = 1;
+                                continue;
+                            }    
+                        }
+                        // This is the new address
+                        if (flag == 0)
+                        {
                             string pickUpTime = pickUpPoint.Time;
                             suggestedRide.PickUpTime = pickUpTime;
+                            suggestedRide.PickUpPoint = pickUpPoint.Address;
                             break;
                         }
                     }
-
                     relevantRoutes.Add(suggestedRide);
                 }
-
             }
              relevantRoutes = relevantRoutes.OrderByDescending(r => r.Relevance).ToList();
              return relevantRoutes;
@@ -277,7 +290,7 @@ namespace trempApplication.Properties.Controllers
            
             var routes = GetPotentialRides(mapRequest.Date, mapRequest.ToUniversity).Result;
             
-            var relevants = FilterRoutes(routes, mapRequest.Origin, mapRequest.Destination, 1.0);
+            var relevants = FilterRoutes(routes, mapRequest.Origin, mapRequest.Destination, 30.0);
             // return suggested 
             return Ok(relevants);
 
