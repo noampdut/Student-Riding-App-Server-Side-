@@ -197,6 +197,11 @@ namespace trempApplication.Properties.Controllers
             List<SuggestedRide> relevantRoutes = new List<SuggestedRide>();
             var relevance = 0.0;
 
+            if(routes == null)
+            {
+                return relevantRoutes;
+            }
+
             foreach (var route in routes)
             {
                 var result = CalculateRelevance(route, userOrigin, userDestination);
@@ -285,12 +290,13 @@ namespace trempApplication.Properties.Controllers
         }
 
         [HttpPost]
-        public async Task<ActionResult> CalculateRoute([FromBody] MapRequest mapRequest)
+        public async Task<IActionResult> CalculateRoute([FromBody] MapRequest mapRequest)
         {
            
             var routes = GetPotentialRides(mapRequest.Date, mapRequest.ToUniversity).Result;
             
             var relevants = FilterRoutes(routes, mapRequest.Origin, mapRequest.Destination, 30.0);
+
             // return suggested 
             return Ok(relevants);
 

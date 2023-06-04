@@ -9,15 +9,10 @@
     public class SuggestedRide
     {
         public Guid RideId { get; set; }
-        // public OptionalRoute OptionalRoute { get; set; }
-
+       
         public double Distance { get; set; } // total dist
         public double Duration { get; set; } // total time
         public List<string> Instructions { get; set; } // list of step-by-step instructions
-
-        //public List<string> Waypoints { get; set; }
-
-      //  public Dictionary<string, string> PickUpTimes { get; set; }
 
         public List<PickUpPoint> pickUpPoints { get; set; }
 

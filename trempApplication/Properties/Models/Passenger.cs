@@ -8,6 +8,6 @@
         public string Faculty { get; set; }
         public string PhoneNumber { get; set; }
         public List<Guid> CarIds { get; set; }
-        public List<Guid> AddressIds { get; set; }
+        //public List<Guid> AddressIds { get; set; }
     }
 }
