@@ -83,18 +83,5 @@ namespace trempApplication.Properties.Controllers
             return BadRequest(result.ErrorMessage);
         }
         
-        /*
-        // DELETE api/<CarsController>/5
-        [HttpDelete("{owner}")]
-        public async Task<IActionResult> Delete(Guid owner)
-        {
-            var result = await _carService.DeleteCarsByOwner(owner);
-            if (result.IsSuccess)
-            {
-                return NoContent();
-            }
-            return BadRequest(result.ErrorMessage);
-        }
-        */
     }
 }
