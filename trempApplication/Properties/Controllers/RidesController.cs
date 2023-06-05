@@ -75,11 +75,62 @@ namespace trempApplication.Properties.Controllers
 
         }
 
-        // PUT api/<RidesController>/5
+        /*// PUT api/<RidesController>/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(Guid id, [FromBody] Ride ride)
         {
             var result = await _rideService.UpdateRide(ride, id);
+            if (result.IsSuccess)
+            {
+                return NoContent();
+            }
+            return BadRequest(result.ErrorMessage);
+        } */
+
+        // PUT api/<RidesController>/5
+        [HttpPut("{id}")]
+        public async Task<IActionResult> Put(string id, [FromBody] SuggestedRide suggestedRide)
+        {
+            var result_old_ride = await _rideService.GetRideById(suggestedRide.RideId);
+            var old_ride = result_old_ride.Ride;
+            var new_ride = new Ride
+            {
+                Id = old_ride.Id,
+                DriverId = old_ride.DriverId,
+                CarId = old_ride.CarId,
+                Capacity = old_ride.Capacity - 1,
+                Source = old_ride.Source,
+                Dest = old_ride.Dest,
+                ToUniversity = old_ride.ToUniversity,
+                Date = old_ride.Date,
+                pickUpPoints = suggestedRide.pickUpPoints,
+                Duration = suggestedRide.Duration
+            };
+            var flag = 0;
+            foreach (var pickPoint in new_ride.pickUpPoints)
+            {
+                /* flag = 0;
+                 foreach (var point in old_ride.pickUpPoints)
+                 {
+                     if(pickPoint.Address == point.Address)
+                     {
+                         pickPoint.PassengerId = point.PassengerId;
+                         flag = 1;
+                         continue;
+                     }
+                 }
+                 if (flag == 0)
+                 {
+                     pickPoint.PassengerId = id;
+                 }*/
+                if (pickPoint.PassengerId == "Unknown Yet")
+                {
+                    pickPoint.PassengerId = id;
+                    break;
+                }
+
+            }
+            var result = await _rideService.UpdateRide(new_ride, new_ride.Id);
             if (result.IsSuccess)
             {
                 return NoContent();

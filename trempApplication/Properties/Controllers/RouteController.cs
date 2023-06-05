@@ -112,7 +112,7 @@ namespace trempApplication.Properties.Controllers
         {
             double originWeight =  1;
             double driveDurationWeightFactor =0.5;
-            double waypointCountWeightFactor = 1;
+            double waypointCountWeightFactor = 3;
             double relevance = 50;
 
             List<string> waypoints = new List<string>();
@@ -174,10 +174,9 @@ namespace trempApplication.Properties.Controllers
 
             
             int totalWaypoints = newRoute.pickUpPoints.Count;
-            int maxWaypointsThreshold = drive.Capacity;
 
             // Check if the total number of waypoints exceeds the threshold
-            if (totalWaypoints > maxWaypointsThreshold)
+            if (drive.Capacity <= 0)
             {
                 relevance = -50;
             }
@@ -220,7 +219,6 @@ namespace trempApplication.Properties.Controllers
                         
                         RideId = route.Id, // old ride- if we get an approval, we will update this  
                         Driver = _passengerService.GetPassengerById(route.DriverId).Result.Passenger,
-                       // PickUpPoint = userOrigin,
                         Relevance = result.Item2,
                         Capacity = route.Capacity
                     };
@@ -234,6 +232,7 @@ namespace trempApplication.Properties.Controllers
                             // looking for the new address of the new client 
                             if(pickUpPoint.Address == Point.Address)
                             {
+                                pickUpPoint.PassengerId = Point.PassengerId;
                                 flag = 1;
                                 continue;
                             }    
@@ -244,7 +243,8 @@ namespace trempApplication.Properties.Controllers
                             string pickUpTime = pickUpPoint.Time;
                             suggestedRide.PickUpTime = pickUpTime;
                             suggestedRide.PickUpPoint = pickUpPoint.Address;
-                            break;
+                            pickUpPoint.PassengerId = "Unknown Yet";
+                            
                         }
                     }
                     relevantRoutes.Add(suggestedRide);
