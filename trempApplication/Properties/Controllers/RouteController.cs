@@ -157,7 +157,7 @@ namespace trempApplication.Properties.Controllers
 
             // calculate the time was added to the original drive 
             double addTimeToDrive = newRoute.Duration - drive.Duration;
-            if (addTimeToDrive > 7)
+            if (addTimeToDrive > 15)
             {
                 relevance = -1;
             }
