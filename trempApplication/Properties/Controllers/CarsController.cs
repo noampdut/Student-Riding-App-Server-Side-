@@ -12,10 +12,12 @@ namespace trempApplication.Properties.Controllers
     {
 
         private ICar _carService;
+        private IPassenger _passengerService;
 
-        public CarsController(ICar carService)
+        public CarsController(ICar carService, IPassenger passengerService)
         {
             _carService = carService;
+            _passengerService = passengerService;
         }
 
         // GET: api/<CarsController>
@@ -51,6 +53,9 @@ namespace trempApplication.Properties.Controllers
             {
                 Guid Id = Guid.Parse(result.ErrorMessage);
                 var new_car = await _carService.GetCarById(Id);
+                var owner = await _passengerService.GetPassengerById(new_car.Car.Owner);
+                owner.Passenger.CarIds.Add(Id);
+                await _passengerService.UpdatePassenger(owner.Passenger, new_car.Car.Owner);
                 return Ok(new_car.Car);
             }
             return BadRequest(result.ErrorMessage);
