@@ -75,18 +75,6 @@ namespace trempApplication.Properties.Controllers
 
         }
 
-        /*// PUT api/<RidesController>/5
-        [HttpPut("{id}")]
-        public async Task<IActionResult> Put(Guid id, [FromBody] Ride ride)
-        {
-            var result = await _rideService.UpdateRide(ride, id);
-            if (result.IsSuccess)
-            {
-                return NoContent();
-            }
-            return BadRequest(result.ErrorMessage);
-        } */
-
         // PUT api/<RidesController>/5
         [HttpPut("{id}")]
         public async Task<IActionResult> Put(string id, [FromBody] SuggestedRide suggestedRide)

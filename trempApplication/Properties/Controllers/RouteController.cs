@@ -6,6 +6,7 @@ using trempApplication.Properties.Models;
 using trempApplication.Properties.Interfaces;
 using GoogleApi.Entities.Maps.Common.Enums;
 using System.Diagnostics;
+using GoogleMaps.LocationServices;
 
 
 namespace trempApplication.Properties.Controllers
@@ -51,7 +52,7 @@ namespace trempApplication.Properties.Controllers
 
         [Route("internal")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public OptionalRoute CalculateOptionalRoute([FromQuery] string origin, [FromQuery] string destination, [FromQuery] List<string> waypoints, [FromQuery] Models.Date date)
+        public OptionalRoute CalculateOptionalRoute([FromQuery] string origin, [FromQuery] string destination, [FromQuery] List<string> waypoints, [FromQuery] Models.Date date, bool toUniversity) 
         {
 
             DirectionsRequest request = new DirectionsRequest();
@@ -72,11 +73,23 @@ namespace trempApplication.Properties.Controllers
                 Duration = Math.Ceiling(response.Routes.First().Legs.Sum(leg => leg.DurationInTraffic?.Value ?? leg.Duration.Value / 60.0)),
                 Instructions = response.Routes.First().Legs.SelectMany(leg => leg.Steps.Select(step => step.HtmlInstructions)).ToList(),
                 Legs = response.Routes.First().Legs.ToList(),
-                //  pickUpPoints = NEED TO TAKE AS AN ARG TO FUNCTION AND UPDATE HERE, FOR THE PASSENGER ID AND THE TIMEOUT POINT
             };
             // Retrieve the pick-up times for each leg
-            var pickUpTimes = CalculatePickUpTimes(response.Routes.First().Legs.ToList(), route.Duration, ConvertToDate(date));
+            var pickUpTimes = CalculatePickUpTimes(response.Routes.First().Legs.ToList(), route.Duration, ConvertToDate(date), toUniversity);
+
             List<PickUpPoint> PickUpPoints = new List<PickUpPoint>();
+          /*if(toUniversity == false) {
+                var waypoint = route.Legs[0].StartAddress;
+                var time = GetPickUpTimeByWayPoint(response.Routes.First().Legs.ToList(), waypoint, pickUpTimes, toUniversity);
+                var pickUpPoint = new PickUpPoint
+                {
+                    Time = time,
+                    Address = waypoint
+                };
+
+                PickUpPoints.Add(pickUpPoint);
+            }*/
+
             foreach (var leg in route.Legs)
             {
                 if (leg == route.Legs.Last())
@@ -84,8 +97,7 @@ namespace trempApplication.Properties.Controllers
                     continue;
                 }
                 var waypoint = leg.EndAddress;
-                //var convert_waypoint = new LocationEx(new GoogleApi.Entities.Common.Address(waypoint));
-                var arrivalTime = GetPickUpTimeByWayPoint(response.Routes.First().Legs.ToList(), waypoint, pickUpTimes);
+                var arrivalTime = GetPickUpTimeByWayPoint(response.Routes.First().Legs.ToList(), waypoint, pickUpTimes, toUniversity);
                 // all pickup times update 
                 var pickUpPoint = new PickUpPoint
                 {
@@ -95,6 +107,8 @@ namespace trempApplication.Properties.Controllers
 
                 PickUpPoints.Add(pickUpPoint);
             }
+
+
 
             route.pickUpPoints = PickUpPoints;
 
@@ -114,7 +128,7 @@ namespace trempApplication.Properties.Controllers
 
             List<string> waypoints = new List<string>();
 
-            var distance = CalculateOptionalRoute(drive.Source, origin, waypoints, drive.Date).Distance;
+            var distance = CalculateOptionalRoute(drive.Source, origin, waypoints, drive.Date, drive.ToUniversity).Distance;
             // calculate distance between the origin and dest of both driver and passenger
             if (distance <= 3)
             {
@@ -125,7 +139,7 @@ namespace trempApplication.Properties.Controllers
                 relevance -= distance * originWeight;
             }
 
-            distance = CalculateOptionalRoute(drive.Dest, destination, waypoints, drive.Date).Distance;
+            distance = CalculateOptionalRoute(drive.Dest, destination, waypoints, drive.Date, drive.ToUniversity).Distance;
 
             if (distance <= 3)
             {
@@ -153,7 +167,7 @@ namespace trempApplication.Properties.Controllers
             }
 
             // create a new route base on the client wayPoint
-            OptionalRoute newRoute = CalculateOptionalRoute(drive.Source, drive.Dest, waypoints, drive.Date);
+            OptionalRoute newRoute = CalculateOptionalRoute(drive.Source, drive.Dest, waypoints, drive.Date, drive.ToUniversity);
 
             // calculate the time was added to the original drive 
             double addTimeToDrive = newRoute.Duration - drive.Duration;
@@ -252,8 +266,13 @@ namespace trempApplication.Properties.Controllers
 
         [Route("internal")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        private string GetPickUpTimeByWayPoint(List<Leg> legs, string waypointAddress, List<string> pickUpTimes)
+        private string GetPickUpTimeByWayPoint(List<Leg> legs, string waypointAddress, List<string> pickUpTimes,bool toUniversity)
         {
+            if (toUniversity== false)
+            {
+                return pickUpTimes[0];
+            }
+
             foreach (var leg in legs)
             {
                 if (leg.EndAddress.Equals(waypointAddress))
@@ -267,13 +286,19 @@ namespace trempApplication.Properties.Controllers
 
         [Route("internal")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        private List<string> CalculatePickUpTimes(List<Leg> legs, double routeDuration, System.DateTime departureTime)
+        private List<string> CalculatePickUpTimes(List<Leg> legs, double routeDuration, System.DateTime departureTime, bool toUniversity)
         {
             var pickUpTimes = new List<string>();
             double accumulatedDuration = 0;
 
+            if(toUniversity == false)
+            {
+                pickUpTimes.Add(departureTime.ToString("HH:mm"));
+            }
+
             foreach (var leg in legs)
             {
+                
                 var estimatedArrivalTime = departureTime.AddSeconds(accumulatedDuration + (leg.Duration?.Value ?? 0));
                 pickUpTimes.Add(estimatedArrivalTime.ToString("HH:mm"));
 
