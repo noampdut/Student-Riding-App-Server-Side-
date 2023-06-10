@@ -48,7 +48,7 @@ namespace trempApplication.Properties.Controllers
                 Faculty = Faculty,
                 PhoneNumber = PhoneNumber,
                 CarIds = new List<Guid> { },
-              //  AddressIds = new List<Guid> { }
+                Bio = ""
             };
             var result_user = await _userService.AddUser(user);
             var result_passenger = await _passengerService.AddPassenger(passenger);
