@@ -152,8 +152,6 @@ namespace trempApplication.Properties.Controllers
                 waypoints.Add(waypoint);
             }
 
-
-
             // create a new route base on the client wayPoint
             OptionalRoute newRoute = CalculateOptionalRoute(drive.Source, drive.Dest, waypoints, drive.Date);
 
@@ -162,7 +160,6 @@ namespace trempApplication.Properties.Controllers
             if (addTimeToDrive > 7)
             {
                 relevance = -1;
-                //return new Tuple<OptionalRoute, double>(newRoute, relevance); 
             }
             else
             {
@@ -219,7 +216,7 @@ namespace trempApplication.Properties.Controllers
                         Relevance = result.Item2,
                         Capacity = route.Capacity
                     };
-
+                    List<string> assignedPassengerIds = new List<string>();
                     // update the pickup time of the client in suggestedRide object
                     foreach (var pickUpPoint in newRoute.pickUpPoints)
                     {
@@ -227,11 +224,12 @@ namespace trempApplication.Properties.Controllers
                         foreach (var Point in route.pickUpPoints)
                         {
                             // looking for the new address of the new client 
-                            if (pickUpPoint.Address == Point.Address)
+                            if (pickUpPoint.Address == Point.Address && !assignedPassengerIds.Contains(Point.PassengerId))
                             {
                                 pickUpPoint.PassengerId = Point.PassengerId;
+                                assignedPassengerIds.Add(Point.PassengerId);
                                 flag = 1;
-                                continue;
+                                break;
                             }
                         }
                         // This is the new address
@@ -241,7 +239,6 @@ namespace trempApplication.Properties.Controllers
                             suggestedRide.PickUpTime = pickUpTime;
                             suggestedRide.PickUpPoint = pickUpPoint.Address;
                             pickUpPoint.PassengerId = "Unknown Yet";
-
                         }
                     }
                     relevantRoutes.Add(suggestedRide);
@@ -328,7 +325,6 @@ namespace trempApplication.Properties.Controllers
             string client_bio = client.Bio;
             foreach (var suggestedRide in relevants)
             {
-                
                 string driver_bio = suggestedRide.Driver.Bio;
                 double decimalValue = CheckingSimilarity(driver_bio, client_bio);
                 string percentage = (decimalValue * 100).ToString("0") + "%";
