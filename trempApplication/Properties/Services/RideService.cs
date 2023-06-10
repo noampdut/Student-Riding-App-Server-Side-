@@ -158,7 +158,7 @@ namespace trempApplication.Properties.Services
         {
             return u => u.Capacity > stationCount;
         }
-        public async Task<(bool IsSuccess, List<Ride> Rides, string ErrorMessage)> GetPotentialRides(Date uDate, bool ToUniversity)
+        public async Task<(bool IsSuccess, List<Ride> Rides, string ErrorMessage)> GetPotentialRides(Date uDate, bool ToUniversity, Guid client_id)
         {
              try
              {
@@ -170,9 +170,11 @@ namespace trempApplication.Properties.Services
                  var filteredRides = new List<Ride>();
                  foreach (var ride in rides)
                  {
-
-                    //int totalWaypoints = ride.pickUpPoints.Count;
-                   // int maxWaypointsThreshold = ride.Capacity;
+                    // Do not offer to a client a drive he offered to others
+                    if(ride.DriverId == client_id)
+                    {
+                        continue;
+                    }
 
                     // checking if number of stops is higher or equal to the capacity
                     if (ride.Capacity <= 0) {

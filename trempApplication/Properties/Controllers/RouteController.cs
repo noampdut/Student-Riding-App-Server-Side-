@@ -39,9 +39,9 @@ namespace trempApplication.Properties.Controllers
 
         [Route("internal")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        public async Task<List<Ride>> GetPotentialRides(Models.Date uDate, bool toUniversity)
+        public async Task<List<Ride>> GetPotentialRides(Models.Date uDate, bool toUniversity, Guid client_id)
         {
-            var result = await _rideService.GetPotentialRides(uDate, toUniversity);
+            var result = await _rideService.GetPotentialRides(uDate, toUniversity, client_id);
             if (result.IsSuccess)
             {
                 return result.Rides;
@@ -318,12 +318,14 @@ namespace trempApplication.Properties.Controllers
     [HttpPost]
         public async Task<IActionResult> CalculateRoute([FromBody] MapRequest mapRequest)
         {
-            string client_id = mapRequest.PassengerId;
-            var routes = GetPotentialRides(mapRequest.Date, mapRequest.ToUniversity).Result;
-            
+            string client_id = mapRequest.PassengerId; // like 3152....
+            var client = _passengerService.GetPassengerByIdNumber(client_id).Result.Passenger;
+
+            var routes = GetPotentialRides(mapRequest.Date, mapRequest.ToUniversity,client.Id).Result;
+          
             var relevants = FilterRoutes(routes, mapRequest.Origin, mapRequest.Destination, 30.0);
 
-            string client_bio = _passengerService.GetPassengerByIdNumber(client_id).Result.Passenger.Bio;
+            string client_bio = client.Bio;
             foreach (var suggestedRide in relevants)
             {
                 
@@ -333,12 +335,6 @@ namespace trempApplication.Properties.Controllers
                 suggestedRide.Similarity = percentage;
             }
 
-            //string one1 = "i like movies";
-            //string two2 = "movies and dogs";
-            //double decimalValue1 = CheckingSimilarity(one1, two2);
-            //string percentage1 = (decimalValue * 100).ToString("0") + "%";
-
-          
             // return suggested 
             return Ok(relevants);
 

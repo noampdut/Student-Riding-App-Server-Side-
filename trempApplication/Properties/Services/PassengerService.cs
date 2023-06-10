@@ -107,18 +107,19 @@ namespace trempApplication.Properties.Services
             }
         }
 
-        public async Task<(bool IsSuccess, string ErrorMessage)> UpdatePassenger(Passenger passenger, Guid id)
+        public async Task<(bool IsSuccess, Passenger Passenger, string ErrorMessage)> UpdatePassenger(Passenger passenger, Guid id)
         {
             try
             {
                 if (passenger == null)
                 {
-                    return (false, "The passenger object is null.");
+                    return (false,null, "The passenger object is null.");
                 }
 
                 var filter = Builders<Passenger>.Filter.Eq(u => u.Id, id);
                 await passengersCollection.ReplaceOneAsync(filter, passenger);
-                return (true, null);
+                var result = GetPassengerById(id);
+                return (true, result.Result.Passenger, null);
             }
             catch (Exception ex)
             {

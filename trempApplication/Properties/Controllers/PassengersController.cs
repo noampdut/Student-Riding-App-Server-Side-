@@ -73,7 +73,7 @@ namespace trempApplication.Properties.Controllers
             var result = await _passengerService.UpdatePassenger(passenger, id);
             if (result.IsSuccess)
             {
-                return NoContent();
+                return Ok(result.Passenger);
             }
             return BadRequest(result.ErrorMessage);
         }

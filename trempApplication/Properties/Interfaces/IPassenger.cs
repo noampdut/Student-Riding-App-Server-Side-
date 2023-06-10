@@ -9,7 +9,7 @@ namespace trempApplication.Properties.Interfaces
         Task<(bool IsSuccess, Passenger Passenger, string ErrorMessage)> GetPassengerByIdNumber(string IdNumber);
 
         Task<(bool IsSuccess, string ErrorMessage)> AddPassenger(Passenger passenger);
-        Task<(bool IsSuccess, string ErrorMessage)> UpdatePassenger(Passenger passenger, Guid id);
+        Task<(bool IsSuccess, Passenger Passenger, string ErrorMessage)> UpdatePassenger(Passenger passenger, Guid id);
         Task<(bool IsSuccess, string ErrorMessage)> DeletePassenger(Guid id);
 
     }
