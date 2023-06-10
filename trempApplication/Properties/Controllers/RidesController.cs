@@ -106,23 +106,10 @@ namespace trempApplication.Properties.Controllers
                 pickUpPoints = suggestedRide.pickUpPoints,
                 Duration = suggestedRide.Duration
             };
-            var flag = 0;
+           
             foreach (var pickPoint in new_ride.pickUpPoints)
             {
-                /* flag = 0;
-                 foreach (var point in old_ride.pickUpPoints)
-                 {
-                     if(pickPoint.Address == point.Address)
-                     {
-                         pickPoint.PassengerId = point.PassengerId;
-                         flag = 1;
-                         continue;
-                     }
-                 }
-                 if (flag == 0)
-                 {
-                     pickPoint.PassengerId = id;
-                 }*/
+                
                 if (pickPoint.PassengerId == "Unknown Yet")
                 {
                     pickPoint.PassengerId = id;

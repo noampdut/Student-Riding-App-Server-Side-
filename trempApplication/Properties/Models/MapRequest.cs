@@ -8,6 +8,7 @@
         public Date Date { get; set; }
         public bool ToUniversity { get; set; }
 
+        public string PassengerId { get; set; }
 
 
     }

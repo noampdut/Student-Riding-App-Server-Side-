@@ -1,15 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Google.Apis.Auth.OAuth2;
-using static GoogleApi.GoogleMaps;
 using GoogleApi.Entities.Maps.Directions.Request;
-using Google.Type;
 using GoogleApi.Entities.Maps.Directions.Response;
-using GoogleApi.Entities.Common;
-using GoogleMapsAPI.NET.API;
 using GoogleApi.Entities.Maps.Common;
 using trempApplication.Properties.Models;
 using trempApplication.Properties.Interfaces;
 using GoogleApi.Entities.Maps.Common.Enums;
+using System.Diagnostics;
+
 
 namespace trempApplication.Properties.Controllers
 {
@@ -75,15 +72,15 @@ namespace trempApplication.Properties.Controllers
                 Duration = Math.Ceiling(response.Routes.First().Legs.Sum(leg => leg.DurationInTraffic?.Value ?? leg.Duration.Value / 60.0)),
                 Instructions = response.Routes.First().Legs.SelectMany(leg => leg.Steps.Select(step => step.HtmlInstructions)).ToList(),
                 Legs = response.Routes.First().Legs.ToList(),
-              //  pickUpPoints = NEED TO TAKE AS AN ARG TO FUNCTION AND UPDATE HERE, FOR THE PASSENGER ID AND THE TIMEOUT POINT
+                //  pickUpPoints = NEED TO TAKE AS AN ARG TO FUNCTION AND UPDATE HERE, FOR THE PASSENGER ID AND THE TIMEOUT POINT
             };
             // Retrieve the pick-up times for each leg
             var pickUpTimes = CalculatePickUpTimes(response.Routes.First().Legs.ToList(), route.Duration, ConvertToDate(date));
-            List<PickUpPoint> PickUpPoints = new List<PickUpPoint>(); 
+            List<PickUpPoint> PickUpPoints = new List<PickUpPoint>();
             foreach (var leg in route.Legs)
             {
                 if (leg == route.Legs.Last())
-                {                      
+                {
                     continue;
                 }
                 var waypoint = leg.EndAddress;
@@ -95,7 +92,7 @@ namespace trempApplication.Properties.Controllers
                     Time = arrivalTime,
                     Address = waypoint
                 };
-                
+
                 PickUpPoints.Add(pickUpPoint);
             }
 
@@ -105,13 +102,13 @@ namespace trempApplication.Properties.Controllers
 
         }
 
-       
+
         [Route("internal")]
         [ApiExplorerSettings(IgnoreApi = true)]
         private Tuple<OptionalRoute, double> CalculateRelevance(Ride drive, string origin, string destination)
         {
-            double originWeight =  1;
-            double driveDurationWeightFactor =0.5;
+            double originWeight = 1;
+            double driveDurationWeightFactor = 0.5;
             double waypointCountWeightFactor = 3;
             double relevance = 50;
 
@@ -157,8 +154,8 @@ namespace trempApplication.Properties.Controllers
 
 
 
-             // create a new route base on the client wayPoint
-             OptionalRoute newRoute = CalculateOptionalRoute(drive.Source, drive.Dest, waypoints, drive.Date);
+            // create a new route base on the client wayPoint
+            OptionalRoute newRoute = CalculateOptionalRoute(drive.Source, drive.Dest, waypoints, drive.Date);
 
             // calculate the time was added to the original drive 
             double addTimeToDrive = newRoute.Duration - drive.Duration;
@@ -172,7 +169,7 @@ namespace trempApplication.Properties.Controllers
                 relevance -= addTimeToDrive * driveDurationWeightFactor;
             }
 
-            
+
             int totalWaypoints = newRoute.pickUpPoints.Count;
 
             // Check if the total number of waypoints exceeds the threshold
@@ -196,7 +193,7 @@ namespace trempApplication.Properties.Controllers
             List<SuggestedRide> relevantRoutes = new List<SuggestedRide>();
             var relevance = 0.0;
 
-            if(routes == null)
+            if (routes == null)
             {
                 return relevantRoutes;
             }
@@ -205,7 +202,7 @@ namespace trempApplication.Properties.Controllers
             {
                 var result = CalculateRelevance(route, userOrigin, userDestination);
                 relevance = result.Item2;
-                
+
                 if (relevance >= threshold)
                 {
                     var newRoute = result.Item1; // optinal route
@@ -216,7 +213,7 @@ namespace trempApplication.Properties.Controllers
                         Duration = newRoute.Duration, // updated
                         Instructions = newRoute.Instructions, // updated
                         pickUpPoints = newRoute.pickUpPoints,
-                        
+
                         RideId = route.Id, // old ride- if we get an approval, we will update this  
                         Driver = _passengerService.GetPassengerById(route.DriverId).Result.Passenger,
                         Relevance = result.Item2,
@@ -230,12 +227,12 @@ namespace trempApplication.Properties.Controllers
                         foreach (var Point in route.pickUpPoints)
                         {
                             // looking for the new address of the new client 
-                            if(pickUpPoint.Address == Point.Address)
+                            if (pickUpPoint.Address == Point.Address)
                             {
                                 pickUpPoint.PassengerId = Point.PassengerId;
                                 flag = 1;
                                 continue;
-                            }    
+                            }
                         }
                         // This is the new address
                         if (flag == 0)
@@ -244,17 +241,17 @@ namespace trempApplication.Properties.Controllers
                             suggestedRide.PickUpTime = pickUpTime;
                             suggestedRide.PickUpPoint = pickUpPoint.Address;
                             pickUpPoint.PassengerId = "Unknown Yet";
-                            
+
                         }
                     }
                     relevantRoutes.Add(suggestedRide);
                 }
             }
-             relevantRoutes = relevantRoutes.OrderByDescending(r => r.Relevance).ToList();
-             return relevantRoutes;
+            relevantRoutes = relevantRoutes.OrderByDescending(r => r.Relevance).ToList();
+            return relevantRoutes;
         }
 
-       
+
 
         [Route("internal")]
         [ApiExplorerSettings(IgnoreApi = true)]
@@ -289,25 +286,64 @@ namespace trempApplication.Properties.Controllers
             return pickUpTimes;
         }
 
-        [HttpPost]
+        [Route("internal")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        private static double CheckingSimilarity(string string1, string string2)
+        {
+            string pythonScript = "bert.py";
+            ProcessStartInfo startInfo = new ProcessStartInfo
+            {
+                FileName = "python",
+                Arguments = $"{pythonScript} \"{string1}\" \"{string2}\"",
+                UseShellExecute = false,
+                RedirectStandardOutput = true,
+                CreateNoWindow = true
+            };
+
+            using (Process process = Process.Start(startInfo))
+            {
+                using (var reader = process.StandardOutput)
+                {
+                    string output = reader.ReadToEnd();
+                    double similarity;
+                    if (double.TryParse(output, out similarity))
+                    {
+                        return similarity;
+                    }
+                }
+                return 0.0; 
+            }
+        }
+
+    [HttpPost]
         public async Task<IActionResult> CalculateRoute([FromBody] MapRequest mapRequest)
         {
-           
+            string client_id = mapRequest.PassengerId;
             var routes = GetPotentialRides(mapRequest.Date, mapRequest.ToUniversity).Result;
             
             var relevants = FilterRoutes(routes, mapRequest.Origin, mapRequest.Destination, 30.0);
 
+            string client_bio = _passengerService.GetPassengerByIdNumber(client_id).Result.Passenger.Bio;
+            foreach (var suggestedRide in relevants)
+            {
+                
+                string driver_bio = suggestedRide.Driver.Bio;
+                double decimalValue = CheckingSimilarity(driver_bio, client_bio);
+                string percentage = (decimalValue * 100).ToString("0") + "%";
+                suggestedRide.Similarity = percentage;
+            }
+
+            //string one1 = "i like movies";
+            //string two2 = "movies and dogs";
+            //double decimalValue1 = CheckingSimilarity(one1, two2);
+            //string percentage1 = (decimalValue * 100).ToString("0") + "%";
+
+          
             // return suggested 
             return Ok(relevants);
 
         }
-
-
-
     }
-
-
-
 }
 
 

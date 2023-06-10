@@ -25,5 +25,7 @@
 
         public double Relevance { get; set; }
         public int Capacity { get; set; }
+
+        public string Similarity { get; set; } 
     }
 }
