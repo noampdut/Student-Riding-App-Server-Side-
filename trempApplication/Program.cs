@@ -23,7 +23,7 @@ builder.Services.AddScoped<IPassenger, PassengerService>();
 builder.Services.AddScoped<ICar, CarService>();
 builder.Services.AddScoped<IRide, RideService>();
 builder.Services.AddScoped<IUser, UserService>();
-
+builder.Services.AddSingleton<INotificationService, NotificationService>();
 
 
 var app = builder.Build();

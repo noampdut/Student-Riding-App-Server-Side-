@@ -7,6 +7,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="FirebaseAdmin" Version="2.3.0" />
     <PackageReference Include="Google.Api.CommonProtos" Version="2.9.0" />
     <PackageReference Include="Google.Apis" Version="1.60.0" />
     <PackageReference Include="Google.Apis.Auth" Version="1.60.0" />

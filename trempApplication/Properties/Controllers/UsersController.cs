@@ -13,11 +13,13 @@ namespace trempApplication.Properties.Controllers
 
         private IUser _userService;
         private IPassenger _passengerService;
+        private INotificationService _notificationService;
 
-        public UsersController(IUser userService, IPassenger passengerService)
+        public UsersController(IUser userService, IPassenger passengerService, INotificationService notificationService)
         {
             _userService = userService;
             _passengerService = passengerService;
+            _notificationService = notificationService;
         }
 
         // POST api/<UsersController>/5
@@ -27,6 +29,7 @@ namespace trempApplication.Properties.Controllers
             var result = await _userService.GetUserById(user.IdNumber, user.Password);
             if (result.IsSuccess)
             {
+                await _notificationService.sendNotification("cZiJvNx9RgyJESOXXGFcjG:APA91bGZzsoCTH68GgRO-prVq7d12FR1Ow2m1U4F5VfF_8TrGVZl2hmAPtdmg_zAi41N9Bfoueu_Z3WHhPmBSdO4Ci5ioPo0xHsHLExRMyLuuemSnOskuB7hDOVRF8YnOkHOi73EDJp5");
                 return Ok(result.passenger);
             }
             return NotFound(result.ErrorMessage);
