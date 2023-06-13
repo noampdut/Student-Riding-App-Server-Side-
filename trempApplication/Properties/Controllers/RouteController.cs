@@ -7,6 +7,7 @@ using trempApplication.Properties.Interfaces;
 using GoogleApi.Entities.Maps.Common.Enums;
 using System.Diagnostics;
 using System.Web;
+using System.Net;
 
 namespace trempApplication.Properties.Controllers
 {
@@ -359,26 +360,63 @@ namespace trempApplication.Properties.Controllers
 
         }
         /*
-        public static string CreateGoogleMapsLink(string start, string end, string[] waypoints = null, string time = "")
+        public static string GetCoordinates(string address)
         {
-            var baseUri = new Uri("https://www.google.com/maps/dir/");
+            var geocodingBaseUri = new Uri("https://maps.googleapis.com/maps/api/geocode/json");
             var queryParams = HttpUtility.ParseQueryString(string.Empty);
-            queryParams["api"] = "1";
-            queryParams["origin"] = Uri.EscapeDataString(start);
-            queryParams["destination"] = Uri.EscapeDataString(end);
-            if (waypoints != null && waypoints.Length > 0)
+            queryParams["address"] = Uri.EscapeDataString(address);
+            queryParams["key"] = "YOUR_GOOGLE_MAPS_API_KEY"; // Replace with your Google Maps API key
+            var uriBuilder = new UriBuilder(geocodingBaseUri)
             {
-                var waypointsStr = string.Join("|", waypoints);
-                queryParams["waypoints"] = Uri.EscapeDataString(waypointsStr);
+                Query = queryParams.ToString()
+            };
+            var geocodingUrl = uriBuilder.Uri.ToString();
+
+            using (var client = new WebClient())
+            {
+                var response = client.DownloadString(geocodingUrl);
+                // Parse the response JSON to extract the coordinates
+                // Here, you would need to use a JSON parsing library like Newtonsoft.Json
+                // to extract the latitude and longitude from the response.
+                // Assuming you have the JSON parsing logic in a method called ExtractCoordinatesFromResponse
+                var coordinates = ExtractCoordinatesFromResponse(response);
+                return coordinates;
             }
-            queryParams["travelmode"] = "driving";
-            queryParams["time"] = Uri.EscapeDataString(time);
+        }
+
+        public static string CreateWazeAppLink(string start, string end)
+        {
+            var baseUri = new Uri("https://www.waze.com/ul");
+            var queryParams = HttpUtility.ParseQueryString(string.Empty);
+            queryParams["ll"] = $"{end},{start}";
+            queryParams["navigate"] = "yes";
             var uriBuilder = new UriBuilder(baseUri)
             {
                 Query = queryParams.ToString()
             };
             return uriBuilder.Uri.ToString();
         } */
+
+        public static string CreateGoogleMapsLink(string start, string end, string[] waypoints = null, string time = "")
+        {
+            var baseUri = new Uri("https://www.google.com/maps/dir/");
+            var queryParams = HttpUtility.ParseQueryString(string.Empty);
+            queryParams["api"] = "1";
+            queryParams["origin"] = start;
+            queryParams["destination"] = end;
+            if (waypoints != null && waypoints.Length > 0)
+            {
+                var waypointsStr = string.Join("|", waypoints);
+                queryParams["waypoints"] = waypointsStr;
+            }
+            queryParams["travelmode"] = "driving";
+            queryParams["time"] = time;
+            var uriBuilder = new UriBuilder(baseUri)
+            {
+                Query = queryParams.ToString()
+            };
+            return uriBuilder.Uri.ToString();
+        }
     }
 
 

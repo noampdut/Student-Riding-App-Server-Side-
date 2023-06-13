@@ -41,6 +41,20 @@ namespace trempApplication.Properties.Controllers
             }
             return NotFound(result.ErrorMessage);
         }
+        
+        [HttpPut]
+        public async Task<IActionResult> GetPassenergs(List<string> ids)
+        {
+            List<Passenger> passengers = new List<Passenger>();
+            
+            foreach (var id in ids)
+            {
+                var result = await _passengerService.GetPassengerByIdNumber(id);
+                passengers.Add(result.Passenger);
+            }
+            
+            return Ok(passengers);
+        }
 
         // POST api/<PassengersController>
         [HttpPost]

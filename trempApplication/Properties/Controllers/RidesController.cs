@@ -191,7 +191,7 @@ namespace trempApplication.Properties.Controllers
                     if (point.PassengerId == id)
                     {
                         ride.Ride.pickUpPoints.Remove(point);
-                        ride.Ride.Capacity += 1;
+                        ride.Ride.Capacity +=1;
                         await _rideService.UpdateRide(ride.Ride, driveId);
                         return Ok();
                     }
