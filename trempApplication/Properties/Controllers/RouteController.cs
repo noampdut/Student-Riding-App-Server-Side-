@@ -6,7 +6,7 @@ using trempApplication.Properties.Models;
 using trempApplication.Properties.Interfaces;
 using GoogleApi.Entities.Maps.Common.Enums;
 using System.Diagnostics;
-
+using System.Web;
 
 namespace trempApplication.Properties.Controllers
 {
@@ -346,9 +346,38 @@ namespace trempApplication.Properties.Controllers
                 suggestedRide.Similarity = percentage;
             }
 
+            string startLocation = "San Francisco, CA";
+            string endLocation = "San Jose, CA";
+            string[] waypoints = { "Mountain View, CA", "Palo Alto, CA" };
+            string time = "2023-06-13T10:00:00";
+
+            //string googleMapsLink = CreateGoogleMapsLink(startLocation, endLocation, waypoints, time);
+            //Console.WriteLine(googleMapsLink);
+
             // return suggested 
             return Ok(relevants);
 
+        }
+
+        public static string CreateGoogleMapsLink(string start, string end, string[] waypoints = null, string time = "")
+        {
+            var baseUri = new Uri("https://www.google.com/maps/dir/");
+            var queryParams = HttpUtility.ParseQueryString(string.Empty);
+            queryParams["api"] = "1";
+            queryParams["origin"] = Uri.EscapeDataString(start);
+            queryParams["destination"] = Uri.EscapeDataString(end);
+            if (waypoints != null && waypoints.Length > 0)
+            {
+                var waypointsStr = string.Join("|", waypoints);
+                queryParams["waypoints"] = Uri.EscapeDataString(waypointsStr);
+            }
+            queryParams["travelmode"] = "driving";
+            queryParams["time"] = Uri.EscapeDataString(time);
+            var uriBuilder = new UriBuilder(baseUri)
+            {
+                Query = queryParams.ToString()
+            };
+            return uriBuilder.Uri.ToString();
         }
     }
 }

@@ -33,13 +33,13 @@ namespace trempApplication.Properties.Controllers
         }   
 
        
-        [HttpGet("{owner}")]
-        public async Task<IActionResult> GetByOwner(Guid owner)
+        [HttpGet("{id}")]
+        public async Task<IActionResult> GetByOwner(Guid id)
         {
-            var result = await _carService.GetCarsByOwner(owner);
+            var result = await _carService.GetCarById(id);
             if (result.IsSuccess)
             {
-                return Ok(result.cars);
+                return Ok(result.Car);
             }
             return NotFound(result.ErrorMessage);
         }

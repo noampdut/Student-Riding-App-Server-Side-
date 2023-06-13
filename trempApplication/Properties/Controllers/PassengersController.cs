@@ -42,18 +42,6 @@ namespace trempApplication.Properties.Controllers
             return NotFound(result.ErrorMessage);
         }
 
-       /* [HttpGet("{IdNumber}")]
-        public async Task<IActionResult> Get(string IdNumber)
-        {
-            var result = await _passengerService.GetPassengerByIdNumber(IdNumber);
-            if (result.IsSuccess)
-            {
-                return Ok(result.Passenger);
-            }
-            return NotFound(result.ErrorMessage);
-        }*/
-
-
         // POST api/<PassengersController>
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Passenger passenger)
