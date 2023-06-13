@@ -6,7 +6,6 @@ using trempApplication.Properties.Models;
 using trempApplication.Properties.Interfaces;
 using GoogleApi.Entities.Maps.Common.Enums;
 using System.Diagnostics;
-using GoogleMaps.LocationServices;
 
 
 namespace trempApplication.Properties.Controllers
@@ -78,17 +77,7 @@ namespace trempApplication.Properties.Controllers
             var pickUpTimes = CalculatePickUpTimes(response.Routes.First().Legs.ToList(), route.Duration, ConvertToDate(date), toUniversity);
 
             List<PickUpPoint> PickUpPoints = new List<PickUpPoint>();
-          /*if(toUniversity == false) {
-                var waypoint = route.Legs[0].StartAddress;
-                var time = GetPickUpTimeByWayPoint(response.Routes.First().Legs.ToList(), waypoint, pickUpTimes, toUniversity);
-                var pickUpPoint = new PickUpPoint
-                {
-                    Time = time,
-                    Address = waypoint
-                };
-
-                PickUpPoints.Add(pickUpPoint);
-            }*/
+         
 
             foreach (var leg in route.Legs)
             {

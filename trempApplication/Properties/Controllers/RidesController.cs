@@ -93,6 +93,15 @@ namespace trempApplication.Properties.Controllers
         {
             var result_old_ride = await _rideService.GetRideById(suggestedRide.RideId);
             var old_ride = result_old_ride.Ride;
+
+            // Make sure the passenger is not alreay signed - Do not let a passenger to reserve double sits 
+            foreach (var point in old_ride.pickUpPoints)
+            {
+                if(point.PassengerId == id)
+                {
+                    return Ok(2); // passenger is alreay signed 
+                }
+            }
             var new_ride = new Ride
             {
                 Id = old_ride.Id,
@@ -120,9 +129,9 @@ namespace trempApplication.Properties.Controllers
             var result = await _rideService.UpdateRide(new_ride, new_ride.Id);
             if (result.IsSuccess)
             {
-                return NoContent();
+                return Ok(0); // success
             }
-            return BadRequest(result.ErrorMessage);
+            return Ok(1); // cant update
         }
 
         // DELETE api/<RidesController>/5
@@ -132,7 +141,7 @@ namespace trempApplication.Properties.Controllers
             var result = await _rideService.DeleteRide(id);
             if (result.IsSuccess)
             {
-                return NoContent();
+                return Ok(result);
             }
             return BadRequest(result.ErrorMessage);
         }
