@@ -358,7 +358,7 @@ namespace trempApplication.Properties.Controllers
             return Ok(relevants);
 
         }
-
+        /*
         public static string CreateGoogleMapsLink(string start, string end, string[] waypoints = null, string time = "")
         {
             var baseUri = new Uri("https://www.google.com/maps/dir/");
@@ -378,8 +378,10 @@ namespace trempApplication.Properties.Controllers
                 Query = queryParams.ToString()
             };
             return uriBuilder.Uri.ToString();
-        }
+        } */
     }
+
+
 }
 
 

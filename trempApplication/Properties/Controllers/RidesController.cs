@@ -1,6 +1,7 @@
 ﻿using GoogleApi.Entities.Maps.Common;
 using GoogleApi.Entities.Maps.Directions.Request;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using trempApplication.Properties.Interfaces;
 using trempApplication.Properties.Models;
 
@@ -13,10 +14,12 @@ namespace trempApplication.Properties.Controllers
     public class RidesController : ControllerBase
     {
         private IRide _rideService;
+        private IPassenger _passengerService;
 
-        public RidesController(IRide rideService)
+        public RidesController(IRide rideService, IPassenger passengerService)
         {
             _rideService = rideService;
+            _passengerService = passengerService;
         }
 
         // GET: api/<RidesController>
@@ -45,7 +48,7 @@ namespace trempApplication.Properties.Controllers
 
         // GET api/<RidesController>
         [HttpGet("{id}/{getActiveRides}")]
-        public async Task<IActionResult> GetRides(string id,bool getActiveRides)
+        public async Task<IActionResult> GetRides(string id, bool getActiveRides)
         {
             var result = await _rideService.GetActiveOrHistoryRides(id, getActiveRides);
             if (result.IsSuccess)
@@ -97,7 +100,7 @@ namespace trempApplication.Properties.Controllers
             // Make sure the passenger is not alreay signed - Do not let a passenger to reserve double sits 
             foreach (var point in old_ride.pickUpPoints)
             {
-                if(point.PassengerId == id)
+                if (point.PassengerId == id)
                 {
                     return Ok(2); // passenger is alreay signed 
                 }
@@ -115,10 +118,10 @@ namespace trempApplication.Properties.Controllers
                 pickUpPoints = suggestedRide.pickUpPoints,
                 Duration = suggestedRide.Duration
             };
-           
+
             foreach (var pickPoint in new_ride.pickUpPoints)
             {
-                
+
                 if (pickPoint.PassengerId == "Unknown Yet")
                 {
                     pickPoint.PassengerId = id;
@@ -167,5 +170,35 @@ namespace trempApplication.Properties.Controllers
 
             return duration;
         }
+
+
+        // PUT api/<RidesController>/5
+        [HttpPut("{id}/{driveId}")]
+        public async Task<IActionResult> DeleteFromRide(string id, Guid driveId)
+        {
+            var person = await _passengerService.GetPassengerByIdNumber(id);
+            var ride = await _rideService.GetRideById(driveId);
+
+            if (ride.Ride.Driver.IdNumber == id)
+            {
+                await _rideService.DeleteRide(driveId);
+                return Ok();
+            }
+            else
+            {
+                foreach (var point in ride.Ride.pickUpPoints)
+                {
+                    if (point.PassengerId == id)
+                    {
+                        ride.Ride.pickUpPoints.Remove(point);
+                        ride.Ride.Capacity += 1;
+                        await _rideService.UpdateRide(ride.Ride, driveId);
+                        return Ok();
+                    }
+                }
+            }
+            return BadRequest();
+        }
     }
 }
+
