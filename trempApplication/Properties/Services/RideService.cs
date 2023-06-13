@@ -8,11 +8,17 @@ namespace trempApplication.Properties.Services
     public class RideService : IRide
     {
         private IMongoCollection<Ride> ridesCollection;
-        public RideService(IConfiguration configuration)
+       // private IMongoCollection<Passenger> passengersCollection;
+        private IPassenger _passengerService;
+
+        public RideService(IConfiguration configuration, IPassenger passengerService)
         {
             var mongoClient = new MongoClient(configuration.GetConnectionString("PassengerConnection"));
             var mongoDB = mongoClient.GetDatabase("DB");
             ridesCollection = mongoDB.GetCollection<Ride>("Rides");
+           // passengersCollection = mongoDB.GetCollection<Passenger>("Passengers");
+            _passengerService = passengerService;
+
         }
 
         public async Task<(bool IsSuccess, string ErrorMessage)> AddRide(Ride ride)
@@ -106,58 +112,7 @@ namespace trempApplication.Properties.Services
                 throw new Exception("Error updating ride in database", ex);
             }
         }
-        /*
-        public static bool IsCurrentTimeLessThanOrEqualToDate(Date driverDate)
-        {
-            // Convert input Date object to DateTime object
-            DateTime dateTime = new DateTime(Convert.ToInt32(driverDate.Year), Convert.ToInt32(driverDate.Month), Convert.ToInt32(driverDate.Day),
-                Convert.ToInt32(driverDate.Hour), Convert.ToInt32(driverDate.Minute), 0);
 
-            // Get the current date and time
-            DateTime now = DateTime.Now;
-
-            // Compare the current time with the input date
-            if (now <= dateTime)
-            {
-                return true;
-            }
-            else
-            {
-                return false;
-            }
-        }
-
-        public bool CompareCapacity(int capacity, int wayPointsCount)
-        {
-            if (capacity > wayPointsCount)
-            {
-                return true;
-            }
-            return false;
-        }
-        */
-
-       // private Expression<Func<Ride, bool>> IsCurrentTimeLessThanOrEqualToDate(Date date, Date uDate)
-        //{
-          //  DateTime currentDate = new DateTime(Convert.ToInt32(date.Year), Convert.ToInt32(date.Month), Convert.ToInt32(date.Day), Convert.ToInt32(date.Hour), Convert.ToInt32(date.Minute), 0, DateTimeKind.Utc);
-            //DateTime targetDate = new DateTime(Convert.ToInt32(uDate.Year), Convert.ToInt32(uDate.Month), Convert.ToInt32(uDate.Day), Convert.ToInt32(uDate.Hour), Convert.ToInt32(uDate.Minute), 0, DateTimeKind.Utc);
-
-            //return u => u.Date <= currentDate;
-        //}
-
-        private Expression<Func<Ride, bool>> CheckTimeDifference2(int minutes, Date date1, Date date2)
-        {
-            DateTime currentDate = new DateTime(Convert.ToInt32(date1.Year), Convert.ToInt32(date1.Month), Convert.ToInt32(date1.Day), Convert.ToInt32(date1.Hour), Convert.ToInt32(date1.Minute), 0, DateTimeKind.Utc);
-            DateTime targetDate = new DateTime(Convert.ToInt32(date2.Year), Convert.ToInt32(date2.Month), Convert.ToInt32(date2.Day), Convert.ToInt32(date2.Hour), Convert.ToInt32(date2.Minute), 0, DateTimeKind.Utc);
-
-            TimeSpan timeDifference = currentDate - targetDate;
-            return u => timeDifference.TotalMinutes <= minutes;
-        }
-
-        private Expression<Func<Ride, bool>> CompareCapacity(int capacity, int stationCount)
-        {
-            return u => u.Capacity > stationCount;
-        }
         public async Task<(bool IsSuccess, List<Ride> Rides, string ErrorMessage)> GetPotentialRides(Date uDate, bool ToUniversity, Guid client_id)
         {
              try
@@ -227,5 +182,103 @@ namespace trempApplication.Properties.Services
             }
 
         }
+
+        private bool CheckIfDateIsInThePast(Date date1)
+        {
+            // Convert Date object to DateTime objects
+            DateTime dateTime1 = new DateTime(Convert.ToInt32(date1.Year), Convert.ToInt32(date1.Month), Convert.ToInt32(date1.Day),
+                Convert.ToInt32(date1.Hour), Convert.ToInt32(date1.Minute), 0);
+
+            DateTime currentDate = DateTime.Now;
+
+            // Compare the provided date with the current date and time
+            if (dateTime1 < currentDate)
+            {
+                // The provided date is in the past
+                return true; 
+            }
+            else
+            {
+                // The provided date is in the future or the current moment
+                return false; 
+            }
+        }
+
+
+        public async Task<(bool IsSuccess, List<Ride> Rides, string ErrorMessage)> GetRidesByPassenger(string id)
+        {
+            List<Ride> FilteredRides = new List<Ride>();
+            var passenger = await _passengerService.GetPassengerByIdNumber(id);
+            Guid passengerGuid = passenger.Passenger.Id;
+            try
+            {
+                var rides = GetAllRides().Result.Ride;
+                foreach (var ride in rides)
+                {
+                    
+                    if (ride.DriverId == passengerGuid)
+                    {
+                        FilteredRides.Add(ride);
+                        continue;
+                    }
+                    foreach (var point in ride.pickUpPoints)
+                    {
+                        if(point.PassengerId == id)
+                        {
+                            FilteredRides.Add(ride);
+                            break;
+                        }
+                    }
+                }
+
+                if (rides != null)
+                {
+                    return (true, FilteredRides, null);
+                }
+
+                return (false, null, "No rides found");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting rides" , ex);
+            }
+        }
+
+        public async Task<(bool IsSuccess, List<Ride> Rides, string ErrorMessage)> GetActiveOrHistoryRides(string id, bool getActive)
+        {
+            try
+            {
+                var rides = GetRidesByPassenger(id).Result.Rides;
+                var ActiveRides = new List<Ride>();
+                var HistoryRides = new List<Ride>();
+                foreach (var ride in rides)
+                {
+                    // the ride is active (not in history)
+                    if (CheckIfDateIsInThePast(ride.Date) == false)
+                    {
+                        ActiveRides.Add(ride);
+                    }
+                    else
+                    {
+                        HistoryRides.Add(ride);
+                    }
+                }
+
+                if (getActive && ActiveRides != null)
+                {
+                    return (true, ActiveRides, null);
+                }
+                else if (!getActive && HistoryRides != null)
+                {
+                    return (true, HistoryRides, null);
+                }
+
+                return (false, null, "No rides found");
+            }
+            catch (Exception ex)
+            {
+                throw new Exception("Error getting rides from database", ex);
+            }
+        }
     }
-    }
+}

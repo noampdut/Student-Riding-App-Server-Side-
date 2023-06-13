@@ -43,6 +43,18 @@ namespace trempApplication.Properties.Controllers
             return NotFound(result.ErrorMessage);
         }
 
+        // GET api/<RidesController>
+        [HttpGet("{id}/{getActiveRides}")]
+        public async Task<IActionResult> GetRides(string id,bool getActiveRides)
+        {
+            var result = await _rideService.GetActiveOrHistoryRides(id, getActiveRides);
+            if (result.IsSuccess)
+            {
+                return Ok(result.Rides);
+            }
+            return NotFound(result.ErrorMessage);
+        }
+
         // POST api/<RidesController>
         [HttpPost]
         public async Task<IActionResult> Post([FromBody] Ride ride)

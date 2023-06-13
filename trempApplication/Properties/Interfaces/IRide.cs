@@ -10,5 +10,9 @@ namespace trempApplication.Properties.Interfaces
         Task<(bool IsSuccess, string ErrorMessage)> UpdateRide(Ride ride, Guid id);
         Task<(bool IsSuccess, string ErrorMessage)> DeleteRide(Guid id);
         Task<(bool IsSuccess, List<Ride> Rides, string ErrorMessage)> GetPotentialRides(Date uDate, bool ToUniversity, Guid client_id);
+        Task<(bool IsSuccess, List<Ride> Rides, string ErrorMessage)> GetActiveOrHistoryRides(string id, bool getActive);
+
+        Task<(bool IsSuccess, List<Ride> Rides, string ErrorMessage)> GetRidesByPassenger(string id);
+
     }
 }
