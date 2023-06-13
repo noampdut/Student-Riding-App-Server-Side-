@@ -3,7 +3,8 @@
     public class Ride
     {
         public Guid Id { get; set; }
-        public Guid DriverId { get; set; }
+       // public Guid DriverId { get; set; }
+        public Passenger Driver { get; set; }
         public Guid CarId { get; set; }
         public int Capacity { get; set; }
         public string Source { get; set; } 

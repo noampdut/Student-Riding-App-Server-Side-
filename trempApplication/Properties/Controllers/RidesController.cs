@@ -105,7 +105,7 @@ namespace trempApplication.Properties.Controllers
             var new_ride = new Ride
             {
                 Id = old_ride.Id,
-                DriverId = old_ride.DriverId,
+                Driver = old_ride.Driver,
                 CarId = old_ride.CarId,
                 Capacity = old_ride.Capacity - 1,
                 Source = old_ride.Source,

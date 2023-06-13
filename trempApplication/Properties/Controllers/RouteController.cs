@@ -215,7 +215,8 @@ namespace trempApplication.Properties.Controllers
                         pickUpPoints = newRoute.pickUpPoints,
 
                         RideId = route.Id, // old ride- if we get an approval, we will update this  
-                        Driver = _passengerService.GetPassengerById(route.DriverId).Result.Passenger,
+                       // Driver = _passengerService.GetPassengerById(route.DriverId).Result.Passenger,
+                        Driver = route.Driver,
                         Relevance = result.Item2,
                         Capacity = route.Capacity
                     };

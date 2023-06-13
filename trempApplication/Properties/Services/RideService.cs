@@ -126,7 +126,7 @@ namespace trempApplication.Properties.Services
                  foreach (var ride in rides)
                  {
                     // Do not offer to a client a drive he offered to others
-                    if(ride.DriverId == client_id)
+                    if(ride.Driver.Id == client_id)
                     {
                         continue;
                     }
@@ -216,7 +216,7 @@ namespace trempApplication.Properties.Services
                 foreach (var ride in rides)
                 {
                     
-                    if (ride.DriverId == passengerGuid)
+                    if (ride.Driver.Id == passengerGuid)
                     {
                         FilteredRides.Add(ride);
                         continue;
