@@ -3,6 +3,8 @@ using GoogleApi.Entities.Maps.Directions.Request;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json.Linq;
+using System.Reflection.Emit;
+using System.Web;
 using trempApplication.Properties.Interfaces;
 using trempApplication.Properties.Models;
 
@@ -59,6 +61,15 @@ namespace trempApplication.Properties.Controllers
                 return Ok(result.Rides);
             }
             return NotFound(result.ErrorMessage);
+        }
+
+        // GET api/<RidesController>
+        [HttpGet("{rideId}/{id}/{passId}")]
+        public async Task<IActionResult> SendLink(Guid rideId, string id, string passId) 
+        {
+            var result = await _rideService.GetRideById(rideId);
+            var link = GoogleLink(result.Ride);
+            return Ok(link);
         }
 
         // POST api/<RidesController>
@@ -238,6 +249,45 @@ namespace trempApplication.Properties.Controllers
             string title = person.Passenger.UserName + " joined your drive";
             string body = person.Passenger.UserName + " joined your drive" + " on the " + ride.Date.Day + "/" + ride.Date.Month + " to " + ride.Dest + ".\tPickup address: " + point.Address + " at " + point.Time;
             await _notificationService.sendNotification(ride.Driver.Token, title, body);
+        }
+
+
+        public static string CreateGoogleMapsLink(string start, string end, string[] waypoints = null, string time = "")
+        {
+            var baseUri = new Uri("https://www.google.com/maps/dir/");
+            var queryParams = HttpUtility.ParseQueryString(string.Empty);
+            queryParams["api"] = "1";
+            queryParams["origin"] = start;
+            queryParams["destination"] = end;
+            if (waypoints != null && waypoints.Length > 0)
+            {
+                var waypointsStr = string.Join("|", waypoints);
+                queryParams["waypoints"] = waypointsStr;
+            }
+            queryParams["travelmode"] = "driving";
+            queryParams["time"] = time;
+            var uriBuilder = new UriBuilder(baseUri)
+            {
+                Query = queryParams.ToString()
+            };
+            return uriBuilder.Uri.ToString();
+        }
+
+        private string GoogleLink(Ride ride)
+        {
+            string startLocation = ride.Source;
+            string endLocation = ride.Dest;
+            string[] waypoints = new string[] { };
+            foreach (var point in ride.pickUpPoints)
+            {
+                waypoints.Append(point.Address);
+            }
+            // string[] waypoints = { "Mountain View, CA", "Palo Alto, CA" };
+            // string time1 = "2023-06-13T10:00:00";
+            string time = $"{ride.Date.Year}-{ride.Date.Month}-{ride.Date.Day}T{ride.Date.Hour}:{ride.Date.Minute}:00";
+            string googleMapsLink = CreateGoogleMapsLink(startLocation, endLocation, waypoints, time);
+            return googleMapsLink;
+
         }
     }
 }

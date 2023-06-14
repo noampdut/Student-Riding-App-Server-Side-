@@ -8,6 +8,7 @@ using GoogleApi.Entities.Maps.Common.Enums;
 using System.Diagnostics;
 using System.Web;
 using System.Net;
+using Google.Type;
 
 namespace trempApplication.Properties.Controllers
 {
@@ -356,6 +357,8 @@ namespace trempApplication.Properties.Controllers
             //Console.WriteLine(googleMapsLink);
 
             // return suggested 
+
+           
             return Ok(relevants);
 
         }
@@ -397,29 +400,7 @@ namespace trempApplication.Properties.Controllers
             return uriBuilder.Uri.ToString();
         } */
 
-        public static string CreateGoogleMapsLink(string start, string end, string[] waypoints = null, string time = "")
-        {
-            var baseUri = new Uri("https://www.google.com/maps/dir/");
-            var queryParams = HttpUtility.ParseQueryString(string.Empty);
-            queryParams["api"] = "1";
-            queryParams["origin"] = start;
-            queryParams["destination"] = end;
-            if (waypoints != null && waypoints.Length > 0)
-            {
-                var waypointsStr = string.Join("|", waypoints);
-                queryParams["waypoints"] = waypointsStr;
-            }
-            queryParams["travelmode"] = "driving";
-            queryParams["time"] = time;
-            var uriBuilder = new UriBuilder(baseUri)
-            {
-                Query = queryParams.ToString()
-            };
-            return uriBuilder.Uri.ToString();
-        }
     }
-
-
 }
 
 
