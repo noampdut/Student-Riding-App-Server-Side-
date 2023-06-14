@@ -198,7 +198,7 @@ namespace trempApplication.Properties.Controllers
                         ride.Ride.pickUpPoints.Remove(point);
                         ride.Ride.Capacity +=1;
                         await _rideService.UpdateRide(ride.Ride, driveId);
-                        NotificationPassengerCanceled(id, ride.Ride.Date);
+                        NotificationPassengerCanceled(id, ride.Ride);
                         return Ok();
                     }
                 }
@@ -222,13 +222,12 @@ namespace trempApplication.Properties.Controllers
 
         [Route("internal")]
         [ApiExplorerSettings(IgnoreApi = true)]
-        private async void NotificationPassengerCanceled(string pass_id, Date date)
+        private async void NotificationPassengerCanceled(string pass_id, Ride ride)
         {
             var person = await _passengerService.GetPassengerByIdNumber(pass_id);
-            var token = person.Passenger.Token;
             string title = "Passenger canceled participation in your drive";
-            string body = person.Passenger.UserName + " canceled participation in your drive" + " on the " + date.Day + "/" + date.Month + " at " + date.Hour + ":" + date.Minute;
-            await _notificationService.sendNotification(token, title, body);
+            string body = person.Passenger.UserName + " canceled participation in your drive" + " on the " + ride.Date.Day + "/" + ride.Date.Month + " at " + ride.Date.Hour + ":" + ride.Date.Minute;
+            await _notificationService.sendNotification(ride.Driver.Token, title, body);
         }
 
         [Route("internal")]
@@ -237,7 +236,7 @@ namespace trempApplication.Properties.Controllers
         {
             var person = await _passengerService.GetPassengerByIdNumber(pass_id);
             string title = person.Passenger.UserName + " joined your drive";
-            string body = person.Passenger.UserName + " joined your drive" + " on the " + ride.Date.Day + "/" + ride.Date.Month + " to " + ".\tPickup address: " + point.Address + " at " + point.Time;
+            string body = person.Passenger.UserName + " joined your drive" + " on the " + ride.Date.Day + "/" + ride.Date.Month + " to " + ride.Dest + ".\tPickup address: " + point.Address + " at " + point.Time;
             await _notificationService.sendNotification(ride.Driver.Token, title, body);
         }
     }
