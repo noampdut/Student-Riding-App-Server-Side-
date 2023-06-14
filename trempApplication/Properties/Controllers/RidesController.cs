@@ -2,6 +2,7 @@
 using GoogleApi.Entities.Maps.Directions.Request;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
+using Newtonsoft.Json.Linq;
 using trempApplication.Properties.Interfaces;
 using trempApplication.Properties.Models;
 
@@ -127,6 +128,7 @@ namespace trempApplication.Properties.Controllers
                 if (pickPoint.PassengerId == "Unknown Yet")
                 {
                     pickPoint.PassengerId = id;
+                    NotificationNewPassenger(new_ride, id, pickPoint);
                     break;
                 }
 
@@ -188,7 +190,7 @@ namespace trempApplication.Properties.Controllers
             }
             else
             {
-
+                
                 foreach (var point in ride.Ride.pickUpPoints)
                 {
                     if (point.PassengerId == id)
@@ -196,6 +198,7 @@ namespace trempApplication.Properties.Controllers
                         ride.Ride.pickUpPoints.Remove(point);
                         ride.Ride.Capacity +=1;
                         await _rideService.UpdateRide(ride.Ride, driveId);
+                        NotificationPassengerCanceled(id, ride.Ride.Date);
                         return Ok();
                     }
                 }
@@ -212,9 +215,30 @@ namespace trempApplication.Properties.Controllers
                 var person = await _passengerService.GetPassengerByIdNumber(point.PassengerId);
                 var token = person.Passenger.Token;
                 string title = "Drive was cancelled";
-                string body = "The drive that was planned to leave on " + ride.Date.Day +"/" + ride.Date.Month+ " at " +ride.Date.Hour+ ":" +ride.Date.Minute + " to " + ride.Dest + " has been cancelled";
+                string body = "The drive on " + ride.Date.Day +"/" + ride.Date.Month+ " at " +ride.Date.Hour+ ":" +ride.Date.Minute + " to " + ride.Dest + " has been cancelled";
                 await _notificationService.sendNotification(token, title, body);
             }
+        }
+
+        [Route("internal")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        private async void NotificationPassengerCanceled(string pass_id, Date date)
+        {
+            var person = await _passengerService.GetPassengerByIdNumber(pass_id);
+            var token = person.Passenger.Token;
+            string title = "Passenger canceled participation in your drive";
+            string body = person.Passenger.UserName + " canceled participation in your drive" + " on the " + date.Day + "/" + date.Month + " at " + date.Hour + ":" + date.Minute;
+            await _notificationService.sendNotification(token, title, body);
+        }
+
+        [Route("internal")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        private async void NotificationNewPassenger(Ride ride, string pass_id, PickUpPoint point)
+        {
+            var person = await _passengerService.GetPassengerByIdNumber(pass_id);
+            string title = person.Passenger.UserName + " joined your drive";
+            string body = person.Passenger.UserName + " joined your drive" + " on the " + ride.Date.Day + "/" + ride.Date.Month + " to " + ".\tPickup address: " + point.Address + " at " + point.Time;
+            await _notificationService.sendNotification(ride.Driver.Token, title, body);
         }
     }
 }
