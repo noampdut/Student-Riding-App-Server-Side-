@@ -29,7 +29,7 @@ namespace trempApplication.Properties.Controllers
             var result = await _userService.GetUserById(user.IdNumber, user.Password);
             if (result.IsSuccess)
             {
-                await _notificationService.sendNotification("cZiJvNx9RgyJESOXXGFcjG:APA91bGZzsoCTH68GgRO-prVq7d12FR1Ow2m1U4F5VfF_8TrGVZl2hmAPtdmg_zAi41N9Bfoueu_Z3WHhPmBSdO4Ci5ioPo0xHsHLExRMyLuuemSnOskuB7hDOVRF8YnOkHOi73EDJp5");
+               // await _notificationService.sendNotification(user.Token);
                 return Ok(result.passenger);
             }
             return NotFound(result.ErrorMessage);
@@ -57,7 +57,6 @@ namespace trempApplication.Properties.Controllers
             };
             var result_user = await _userService.AddUser(user);
             var result_passenger = await _passengerService.AddPassenger(passenger);
-            // changed
             if (result_user.IsSuccess && result_passenger.IsSuccess)
             {
                 var new_passenger = await _passengerService.GetPassengerByIdNumber(user.IdNumber);

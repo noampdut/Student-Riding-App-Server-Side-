@@ -15,11 +15,13 @@ namespace trempApplication.Properties.Controllers
     {
         private IRide _rideService;
         private IPassenger _passengerService;
+        private INotificationService _notificationService;
 
-        public RidesController(IRide rideService, IPassenger passengerService)
+        public RidesController(IRide rideService, IPassenger passengerService, INotificationService notificationService)
         {
             _rideService = rideService;
             _passengerService = passengerService;
+            _notificationService = notificationService;
         }
 
         // GET: api/<RidesController>
@@ -149,7 +151,6 @@ namespace trempApplication.Properties.Controllers
             return BadRequest(result.ErrorMessage);
         }
 
-        // for client 
         [Route("internal")]
         [ApiExplorerSettings(IgnoreApi = true)]
         public async Task<double> CalculateRoute([FromBody] MapRequest mapRequest)
@@ -181,11 +182,13 @@ namespace trempApplication.Properties.Controllers
 
             if (ride.Ride.Driver.IdNumber == id)
             {
+                NotificationCanceledDrive(ride.Ride);
                 await _rideService.DeleteRide(driveId);
                 return Ok();
             }
             else
             {
+
                 foreach (var point in ride.Ride.pickUpPoints)
                 {
                     if (point.PassengerId == id)
@@ -198,6 +201,20 @@ namespace trempApplication.Properties.Controllers
                 }
             }
             return BadRequest();
+        }
+
+        [Route("internal")]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        private async void NotificationCanceledDrive(Ride ride)
+        {
+            foreach(var point in ride.pickUpPoints)
+            {
+                var person = await _passengerService.GetPassengerByIdNumber(point.PassengerId);
+                var token = person.Passenger.Token;
+                string title = "Drive was cancelled";
+                string body = "The drive that was planned to leave on " + ride.Date.Day +"/" + ride.Date.Month+ " at " +ride.Date.Hour+ ":" +ride.Date.Minute + " to " + ride.Dest + " has been cancelled";
+                await _notificationService.sendNotification(token, title, body);
+            }
         }
     }
 }

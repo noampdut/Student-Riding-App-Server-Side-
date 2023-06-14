@@ -16,7 +16,6 @@ namespace trempApplication.Properties.Services
             var mongoClient = new MongoClient(configuration.GetConnectionString("PassengerConnection"));
             var mongoDB = mongoClient.GetDatabase("DB");
             ridesCollection = mongoDB.GetCollection<Ride>("Rides");
-           // passengersCollection = mongoDB.GetCollection<Passenger>("Passengers");
             _passengerService = passengerService;
 
         }

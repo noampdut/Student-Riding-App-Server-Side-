@@ -17,19 +17,19 @@ namespace trempApplication.Properties.Services
             });
         }
 
-        public async Task<string> sendNotification(string registrationToken)
+        public async Task<string> sendNotification(string registrationToken, string title, string body)
         {
             var message = new Message()
             {
-                Data = new Dictionary<string, string>()
+                /*Data = new Dictionary<string, string>()
                 {
                     {"myData", "1337" },
-                },
+                },*/
                 Token = registrationToken,
                 Notification = new Notification()
                 {
-                    Title = "Test title from code",
-                    Body = "Body test from code"
+                    Title = title,
+                    Body = body
                 }
             };
 

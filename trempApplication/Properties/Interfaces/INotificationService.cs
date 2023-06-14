@@ -2,6 +2,6 @@
 {
     public interface INotificationService
     {
-        Task<string> sendNotification(string registrationToken);
+        Task<string> sendNotification(string registrationToken, string title, string body);
     }
 }
