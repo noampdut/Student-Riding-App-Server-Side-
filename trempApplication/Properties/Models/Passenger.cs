@@ -9,5 +9,7 @@
         public string PhoneNumber { get; set; }
         public List<Guid> CarIds { get; set; }
         public string Bio { get; set; }
+
+        public string Token { get; set; }
     }
 }

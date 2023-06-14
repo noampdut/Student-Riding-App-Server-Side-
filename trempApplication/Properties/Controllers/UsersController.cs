@@ -37,12 +37,13 @@ namespace trempApplication.Properties.Controllers
 
         // POST api/<UsersController>
         [HttpPost("{IdNumber}/{UserName}/{Faculty}/{PhoneNumber}")]
-        public async Task<IActionResult> Register(string IdNumber, string UserName, string Faculty, string PhoneNumber, [FromBody] string password)
+        public async Task<IActionResult> Register(string IdNumber, string UserName, string Faculty, string PhoneNumber, string Token, [FromBody] string password)
         {
             var user = new User
             {
                 IdNumber = IdNumber,
-                Password = password 
+                Password = password,
+                Token = Token
             };
             var passenger = new Passenger
             {
@@ -51,7 +52,8 @@ namespace trempApplication.Properties.Controllers
                 Faculty = Faculty,
                 PhoneNumber = PhoneNumber,
                 CarIds = new List<Guid> { },
-                Bio = ""
+                Bio = "",
+                Token = Token
             };
             var result_user = await _userService.AddUser(user);
             var result_passenger = await _passengerService.AddPassenger(passenger);

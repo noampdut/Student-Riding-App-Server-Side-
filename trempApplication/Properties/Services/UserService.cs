@@ -1,4 +1,5 @@
-﻿using MongoDB.Driver;
+﻿using GoogleApi.Entities.Search.Video.Common;
+using MongoDB.Driver;
 using trempApplication.Properties.Interfaces;
 using trempApplication.Properties.Models;
 
@@ -75,6 +76,9 @@ namespace trempApplication.Properties.Services
                     var passenger = await passengersCollection.Find(query).FirstOrDefaultAsync();
                     if (passenger != null)
                     {
+                        var filter1 = Builders<Passenger>.Filter.Eq(u => u.IdNumber, IdNumber);
+                        passenger.Token = user.Token;
+                        await passengersCollection.ReplaceOneAsync(filter1, passenger);
                         return (true, passenger, null);
                     }
                 }
