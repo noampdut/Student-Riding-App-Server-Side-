@@ -36,7 +36,7 @@ namespace trempApplication.Properties.Controllers
         }
 
         // POST api/<UsersController>
-        [HttpPost("{IdNumber}/{UserName}/{Faculty}/{PhoneNumber}")]
+        [HttpPost("{IdNumber}/{UserName}/{Faculty}/{PhoneNumber}/{Token}")]
         public async Task<IActionResult> Register(string IdNumber, string UserName, string Faculty, string PhoneNumber, string Token, [FromBody] string password)
         {
             var user = new User
