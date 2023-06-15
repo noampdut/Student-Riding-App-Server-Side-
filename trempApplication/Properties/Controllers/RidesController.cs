@@ -256,7 +256,7 @@ namespace trempApplication.Properties.Controllers
         }
 
 
-        public static string CreateGoogleMapsLink(string start, string end, string[] waypoints = null, string time = "")
+        public static string CreateGoogleMapsLink(string start, string end, string[] waypoints, string time = "")
         {
             var baseUri = new Uri("https://www.google.com/maps/dir/");
             var queryParams = HttpUtility.ParseQueryString(string.Empty);
@@ -281,13 +281,7 @@ namespace trempApplication.Properties.Controllers
         {
             string startLocation = ride.Source;
             string endLocation = ride.Dest;
-            string[] waypoints = new string[] { };
-            foreach (var point in ride.pickUpPoints)
-            {
-                waypoints.Append(point.Address);
-            }
-            // string[] waypoints = { "Mountain View, CA", "Palo Alto, CA" };
-            // string time1 = "2023-06-13T10:00:00";
+            string[] waypoints = ride.pickUpPoints.Select(point => point.Address).ToArray();
             string time = $"{ride.Date.Year}-{ride.Date.Month}-{ride.Date.Day}T{ride.Date.Hour}:{ride.Date.Minute}:00";
             string googleMapsLink = CreateGoogleMapsLink(startLocation, endLocation, waypoints, time);
             return googleMapsLink;
