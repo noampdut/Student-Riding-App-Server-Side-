@@ -6,9 +6,6 @@ using trempApplication.Properties.Models;
 using trempApplication.Properties.Interfaces;
 using GoogleApi.Entities.Maps.Common.Enums;
 using System.Diagnostics;
-using System.Web;
-using System.Net;
-using Google.Type;
 
 namespace trempApplication.Properties.Controllers
 {
@@ -16,7 +13,6 @@ namespace trempApplication.Properties.Controllers
     [ApiController]
     public class RouteController : ControllerBase
     {
-
 
         private IRide _rideService;
         private IPassenger _passengerService;
@@ -141,7 +137,7 @@ namespace trempApplication.Properties.Controllers
                 relevance -= distance * originWeight;
             }
 
-            // checking the direction and than add the client as a new wayPoint
+            // Checking the direction and than add the client as a new wayPoint
             if (drive.ToUniversity)
             {
                 waypoints.Add(origin);
@@ -157,10 +153,10 @@ namespace trempApplication.Properties.Controllers
                 waypoints.Add(waypoint);
             }
 
-            // create a new route base on the client wayPoint
+            // Create a new route base on the client wayPoint
             OptionalRoute newRoute = CalculateOptionalRoute(drive.Source, drive.Dest, waypoints, drive.Date, drive.ToUniversity);
 
-            // calculate the time was added to the original drive 
+            // Calculate the time was added to the original drive 
             double addTimeToDrive = newRoute.Duration - drive.Duration;
             if (addTimeToDrive > 15)
             {
@@ -208,7 +204,7 @@ namespace trempApplication.Properties.Controllers
                 if (relevance >= threshold)
                 {
                     var newRoute = result.Item1; // optinal route
-                    // build a suggested ride for the server 
+                    // Build a suggested ride for the server 
                     var suggestedRide = new SuggestedRide
                     {
                         Distance = newRoute.Distance, // updated
@@ -223,13 +219,13 @@ namespace trempApplication.Properties.Controllers
                         Capacity = route.Capacity
                     };
                     List<string> assignedPassengerIds = new List<string>();
-                    // update the pickup time of the client in suggestedRide object
+                    // Update the pickup time of the client in suggestedRide object
                     foreach (var pickUpPoint in newRoute.pickUpPoints)
                     {
                         var flag = 0;
                         foreach (var Point in route.pickUpPoints)
                         {
-                            // looking for the new address of the new client 
+                            // Looking for the new address of the new client 
                             if (pickUpPoint.Address == Point.Address && !assignedPassengerIds.Contains(Point.PassengerId))
                             {
                                 pickUpPoint.PassengerId = Point.PassengerId;
@@ -348,58 +344,10 @@ namespace trempApplication.Properties.Controllers
                 suggestedRide.Similarity = percentage;
             }
 
-            string startLocation = "San Francisco, CA";
-            string endLocation = "San Jose, CA";
-            string[] waypoints = { "Mountain View, CA", "Palo Alto, CA" };
-            string time = "2023-06-13T10:00:00";
-
-            //string googleMapsLink = CreateGoogleMapsLink(startLocation, endLocation, waypoints, time);
-            //Console.WriteLine(googleMapsLink);
-
-            // return suggested 
-
-           
             return Ok(relevants);
 
         }
-        /*
-        public static string GetCoordinates(string address)
-        {
-            var geocodingBaseUri = new Uri("https://maps.googleapis.com/maps/api/geocode/json");
-            var queryParams = HttpUtility.ParseQueryString(string.Empty);
-            queryParams["address"] = Uri.EscapeDataString(address);
-            queryParams["key"] = "YOUR_GOOGLE_MAPS_API_KEY"; // Replace with your Google Maps API key
-            var uriBuilder = new UriBuilder(geocodingBaseUri)
-            {
-                Query = queryParams.ToString()
-            };
-            var geocodingUrl = uriBuilder.Uri.ToString();
-
-            using (var client = new WebClient())
-            {
-                var response = client.DownloadString(geocodingUrl);
-                // Parse the response JSON to extract the coordinates
-                // Here, you would need to use a JSON parsing library like Newtonsoft.Json
-                // to extract the latitude and longitude from the response.
-                // Assuming you have the JSON parsing logic in a method called ExtractCoordinatesFromResponse
-                var coordinates = ExtractCoordinatesFromResponse(response);
-                return coordinates;
-            }
-        }
-
-        public static string CreateWazeAppLink(string start, string end)
-        {
-            var baseUri = new Uri("https://www.waze.com/ul");
-            var queryParams = HttpUtility.ParseQueryString(string.Empty);
-            queryParams["ll"] = $"{end},{start}";
-            queryParams["navigate"] = "yes";
-            var uriBuilder = new UriBuilder(baseUri)
-            {
-                Query = queryParams.ToString()
-            };
-            return uriBuilder.Uri.ToString();
-        } */
-
+        
     }
 }
 

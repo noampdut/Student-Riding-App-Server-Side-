@@ -12,10 +12,12 @@ namespace trempApplication.Properties.Controllers
     {
 
         private IPassenger _passengerService;
-
-        public PassengersController(IPassenger passengerService)
+        private IRide _rideService;
+        public PassengersController(IPassenger passengerService, IRide rideService)
         {
             _passengerService = passengerService;
+            _rideService = rideService;
+
         }
 
         // GET: api/<PassengersController>
@@ -73,6 +75,15 @@ namespace trempApplication.Properties.Controllers
         public async Task<IActionResult> Put(Guid id, [FromBody] Passenger passenger)
         {
             var result = await _passengerService.UpdatePassenger(passenger, id);
+            var rides_result = await _rideService.GetAllRides();
+            foreach (var ride in rides_result.Ride)
+            {
+                if(ride.Driver.IdNumber == passenger.IdNumber) {
+
+                    ride.Driver.Bio = passenger.Bio;
+                    await _rideService.UpdateRide(ride, ride.Id);
+                }     
+            }
             if (result.IsSuccess)
             {
                 return Ok(result.Passenger);
