@@ -4,6 +4,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Newtonsoft.Json.Linq;
 using System.Reflection.Emit;
+using System.Text;
 using System.Web;
 using trempApplication.Properties.Interfaces;
 using trempApplication.Properties.Models;
@@ -69,7 +70,9 @@ namespace trempApplication.Properties.Controllers
         {
             var result = await _rideService.GetRideById(rideId);
             string link = GoogleLink(result.Ride);
-            string encodedLink = Uri.EscapeUriString(link);
+            // Encode the link using UTF-8
+            byte[] encodedBytes = Encoding.UTF8.GetBytes(link);
+            string encodedLink = Uri.EscapeDataString(Encoding.UTF8.GetString(encodedBytes));
             return Ok(encodedLink);
         }
 
