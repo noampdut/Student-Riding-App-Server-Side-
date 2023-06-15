@@ -68,8 +68,9 @@ namespace trempApplication.Properties.Controllers
         public async Task<IActionResult> SendLink(Guid rideId, string id, string passId) 
         {
             var result = await _rideService.GetRideById(rideId);
-            var link = GoogleLink(result.Ride);
-            return Ok(link);
+            string link = GoogleLink(result.Ride);
+            string encodedLink = Uri.EscapeUriString(link);
+            return Ok(encodedLink);
         }
 
         // POST api/<RidesController>
