@@ -102,6 +102,8 @@ namespace trempApplication.Properties.Services
                 }
 
                 var filter = Builders<User>.Filter.Eq(u => u.IdNumber, user.IdNumber);
+                User current_user = await usersCollection.Find(filter).FirstOrDefaultAsync(); ;
+                user.Id = current_user.Id;
                 await usersCollection.ReplaceOneAsync(filter, user);
                 return (true, null);
             }
