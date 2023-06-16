@@ -26,11 +26,19 @@ namespace trempApplication.Properties.Controllers
         [HttpPost]
         public async Task<IActionResult> Login([FromBody] User user)
         {
-            var result = await _userService.GetUserById(user.IdNumber, user.Password);
+            // Check name and password and return the passenger with old token
+            var result = await _userService.GetUserById(user.IdNumber, user.Password); 
             if (result.IsSuccess)
             {
-               // await _notificationService.sendNotification(user.Token);
-                return Ok(result.passenger);
+                // Update user with the new token
+                await _userService.UpdateUser(user); 
+                // The passenger with the old token 
+                var passenger = result.passenger;
+                passenger.Token = user.Token;
+                // Update the passenger in DB
+                await _passengerService.UpdatePassenger(passenger, passenger.Id);
+                // Return the passenger with the new token
+                return Ok(passenger);
             }
             return NotFound(result.ErrorMessage);
         }
