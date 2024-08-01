@@ -23,7 +23,7 @@ Before running the server, ensure you have the following installed:
 
 ### Step 1: Clone the Repository
 ```bash
-git clone https://github.com/noampdut/student-share-drive-server.git
+git clone https://github.com/noampdut/Share-Drive-Server-Side.git
 cd student-share-drive-server
 ```
 
