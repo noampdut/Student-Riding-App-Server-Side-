@@ -1,18 +1,62 @@
 
-### Server-Side README
+# 🚗 Smart Carpool App – Server Side
 
-# Student Share Drive Application - Server Side (פרוייקט שנתי- אפליקציית טרמפים לסטודנטים)
+**Final Year Project – Smart Ride-Sharing Platform for Students**
 
-#### Project Overview
-This repository contains the server-side code for a comprehensive student share drive application. Built with ASP.NET Core (C#) and integrated with MongoDB, the server includes advanced features such as a recommendation system for matching drivers and passengers using NLP and AI algorithms. The server also supports real-time notifications and integration with third-party APIs.
+This repository hosts the backend for a full-stack smart carpool application, designed for university students. Built with ASP.NET Core and MongoDB, it includes an intelligent recommendation engine powered by NLP and machine learning, with full support for real-time updates and ride history tracking.
 
-## Features
-- **ASP.NET Core (C#)**: Robust framework for server-side application.
-- **MongoDB Integration**: Scalable database for user data and file storage.
-- **Natural Language Processing (NLP)**: Enhanced search functionality and personalized recommendations.
-- **Recommendation System**: AI-driven algorithms to match drivers with passengers.
-- **Real-Time Notifications**: Instant updates and alerts for users.
-- **Third-Party API Integration**: Connectivity with external services.
+---
+
+## 📁 Related Repositories
+
+- 📱 [Android App (Client)](https://github.com/noampdut/Studnet-Riding-App)
+
+---
+
+## 🔍 Features
+
+- ✅ **ASP.NET Core Web API (C#)** – Secure, fast, and scalable.
+- 🗂️ **MongoDB** – NoSQL database for all ride, user, and history data.
+- 🧠 **AI-Powered Recommendation Engine** – Matches drivers and passengers based on:
+  - Location, time, and preferences
+  - Google Maps API for route optimization
+  - NLP model (BERT) for semantic matching of user bios
+- 🧾 **User Profiles & Smart Matching** – Each user writes a few words about themselves, and the system finds compatible rides using semantic similarity.
+- 📡 **Real-Time Notifications** via Firebase:
+  - New passenger joined
+  - Ride update or cancellation
+  - Confirmation alerts
+- 🔄 **Two-Way Notification Support** – Drivers and passengers both receive timely updates for every relevant event.
+- 🕓 **Ride History** – Tracks all actions: requests, confirmations, cancellations, and reviews.
+- ⭐ **Review System** – Feedback after each ride improves future recommendations.
+
+---
+
+## 🛠️ Prerequisites
+
+Before running the server, install:
+
+- [.NET 6 SDK or newer](https://dotnet.microsoft.com/download)
+- [MongoDB](https://www.mongodb.com/atlas/database)
+- [Firebase Project](https://firebase.google.com/)
+- [Google Cloud API Key](https://console.cloud.google.com/)
+
+---
+
+🔐 Authentication Note
+While the live version is currently unavailable due to external service costs (MongoDB, Firebase, and Google APIs), a demo version was showcased using pre-created test users.
+🧪 To see the login and full user experience in action, check out the demo video on YouTube.
+Note: Credentials for demo users can easily be configured in Firebase for testing or presentation purposes.
+
+
+## ⚙️ Setup Instructions
+
+### 1️⃣ Clone the Repository
+
+```bash
+git clone https://github.com/noampdut/Share-Drive-Server-Side.git
+cd Share-Drive-Server-Side
+
 
 ## Prerequisites
 Before running the server, ensure you have the following installed:
